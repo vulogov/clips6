@@ -16,9 +16,14 @@ cdef class BASEENV:
 
 cdef class ENV(BASEENV):
     def __cinit__(self):
-        print "Boo"
         BASEENV.Cinit(self)
         self.env = <void*>CreateEnvironment()
         if self.env != NULL:
             self.ready = True
             EnvUserFunctions(self.env)
+    def SHELL(self):
+        if self.ready != True:
+            return None
+        s = SHELL()
+        s.create(<void*>self.env)
+        return s

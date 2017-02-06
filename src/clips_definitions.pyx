@@ -63,7 +63,9 @@ class FactError(RuntimeError):
     pass
 
 
-
+cdef extern from "commline.h":
+    int RouteCommand(void* env, char* cmd, int printResult)
+    void FlushPPBuffer(void * theEnv)
 
 cdef extern from "clips.h":
     ## Datatypes
