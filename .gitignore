@@ -99,3 +99,9 @@ clipssrc/CMakeFiles/*
 clipssrc/lib/*
 clipssrc/CMakeCache.txt
 .idea/*
+
+src/clips6.c
+
+src/clips6.o
+
+*.swp
