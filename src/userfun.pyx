@@ -1,8 +1,9 @@
-cdef void EnvUserFunctions(void *env):
+cdef public void EnvUserFunctions(void *env):
     print "EnvUserFunction()"
-    return
 
-cdef void UserFunctions(void *env):
+
+
+cdef public void UserFunctions(void *env):
     print "UserFunction()"
     return
 

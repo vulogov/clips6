@@ -1,3 +1,8 @@
+## Work with functions
+cdef extern char* clips6_dl(void* env, char *dl_name, char *symname, char *fun_name, char *params, char *retval)
+
+
+
 cdef extern from "clips.h":
     struct dataObject:
         void* supplimentalInfo

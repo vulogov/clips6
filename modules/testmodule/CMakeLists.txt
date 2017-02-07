@@ -10,6 +10,8 @@ set_source_files_properties(
 # Multi-file cython modules do not appear to be working at the moment.
 cython_add_module( testmod testmod.pyx )
 
+install(FILES testmod.so testmod.so DESTINATION ${CLIPS6_MODULE_PATH} )
+
 
 
 

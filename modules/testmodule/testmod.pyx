@@ -1,6 +1,14 @@
 cimport CLPmod as clp
 
 
+CLIPS6_MODULE={
+    "getclock": ["get_clock", "", "d"],
+    "makeA": ["make_class", "", "a"],
+    "call_a": ["call_a", "a", "a"],
+    "call_b":["call_b", "a", "a"],
+    "print_params": ["print_params", "sidm", "a"]
+}
+
 class A:
     def __init__(self):
         print "Class A Constructor is called"

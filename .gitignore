@@ -127,3 +127,7 @@ clipssrc/src/Makefile
 Makefile
 
 modules/testmodule/CMakeFiles/*
+
+install_manifest.txt
+
+src/clips6.h

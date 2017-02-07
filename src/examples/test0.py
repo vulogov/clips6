@@ -20,3 +20,6 @@ print "EXEC():",s.EXEC('(printout t "Hello World !")')
 print 'STRATEGY()',s.STRATEGY(clips6._BREADTH_STRATEGY)
 print 'STRATEGY()',s.STRATEGY() == clips6._BREADTH_STRATEGY
 
+print e.DLmodule("../modules/testmodule/testmod.so")
+#print "EVAL:"
+s.EXEC('(printout t "EXEC:" (getclock) crlf)')

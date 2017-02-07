@@ -2,11 +2,14 @@
 cmake_minimum_required( VERSION 2.8.5 )
 
 # Set the project name
-project( CYTHON_CMAKE_EXAMPLE )
+project( CLIPS6 )
 
 # Make the scripts available in the 'cmake' directory available for the
 # 'include()' command, 'find_package()' command.
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
+set( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${CMAKE_CURRENT_LIST_DIR}/include )
+set( CLIPS6_MODULE_PATH /usr/local/lib/clips6 )
+
 
 # Include the CMake script UseCython.cmake.  This defines add_cython_module().
 # Instruction for use can be found at the top of cmake/UseCython.cmake.

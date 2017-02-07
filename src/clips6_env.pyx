@@ -20,7 +20,8 @@ cdef class ENV(BASEENV):
         self.env = <void*>CreateEnvironment()
         if self.env != NULL:
             self.ready = True
-            EnvUserFunctions(self.env)
+    def DLmodule(self, module):
+        return clips6_load_module(self.env, module)
     def SHELL(self):
         if self.ready != True:
             return None
