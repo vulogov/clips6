@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.8.5 )
 SET(CMAKE_C_FLAGS "-I../clipssrc/src -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
-SET(CMAKE_MODULE_LINKER_FLAGS "-lclips")
+SET(CMAKE_MODULE_LINKER_FLAGS "-L../clipssrc/src -L/usr/local/lib -lclips")
 SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../include")
 execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
