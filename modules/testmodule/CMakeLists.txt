@@ -1,7 +1,12 @@
 cmake_minimum_required( VERSION 2.8.5 )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ../../cmake )
+SET( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ../../include )
 SET(CMAKE_C_FLAGS "-I../../clipssrc/src -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 SET(CMAKE_MODULE_LINKER_FLAGS "-lclips")
+SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../../include")
 
+include( UseCython )
+include( clips6 )
 
 set_source_files_properties(
   ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/modules/testmodule/testmod.pyx

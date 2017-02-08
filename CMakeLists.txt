@@ -6,14 +6,14 @@ project( CLIPS6 )
 
 # Make the scripts available in the 'cmake' directory available for the
 # 'include()' command, 'find_package()' command.
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
-set( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${CMAKE_CURRENT_LIST_DIR}/include )
-set( CLIPS6_MODULE_PATH /usr/local/lib/clips6 )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake )
+set( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include )
 
 
 # Include the CMake script UseCython.cmake.  This defines add_cython_module().
 # Instruction for use can be found at the top of cmake/UseCython.cmake.
 include( UseCython )
+include( clips6 )
 
 # With CMake, a clean separation can be made between the source tree and the
 # build tree.  When all source is compiled, as with pure C/C++, the source is
