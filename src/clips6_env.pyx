@@ -20,6 +20,7 @@ cdef class ENV(BASEENV):
         BASEENV.Cinit(self)
         self.env = <void*>CreateEnvironment()
         if self.env != NULL:
+		InitializeDefaultRouters(self.env)
             self.ready = True
             ENVIRONMENTS.append(self)
     def DLmodule(self, module):

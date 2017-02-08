@@ -118,6 +118,7 @@ cdef extern from "clips.h":
     ## Work with evaluations
     int EnvEval(void* env, char* expressionString, DATA_OBJECT* result)
     ## Work with the routers
+    void  InitializeDefaultRouters(void *)
     int   DeactivateRouter(void* env, char *routerName)
     int   ActivateRouter(void* env, char *routerName)
     ## Debug functions
