@@ -20,14 +20,15 @@ cdef public double get_clock(void* env):
     f = open("/tmp/getclock", "w")
     f.write("%d"%time.time())
     f.close()
+    print "hello from get_clock()",time.time()
     return time.time()
 
 cdef public double get_number_of_params(void* env):
     #return clp.ArgCountCheck(env, "rtn_args", clp.EXACTLY, 3)
-    print "Check params",clp.ArgCountCheck(env, "rtn_args", clp.EXACTLY, 3)
-    str_param = clp.RtnLexeme(env, 1)
-    float_param = clp.RtnDouble(env, 2)
-    int_param = clp.RtnLong(env, 3)
+    print "Check params",clp.EnvArgCountCheck(env, "rtn_args", clp.EXACTLY, 3)
+    str_param = clp.EnvRtnLexeme(env, 1)
+    float_param = clp.EnvRtnDouble(env, 2)
+    int_param = clp.EnvRtnLong(env, 3)
     print repr(str_param),repr(float_param), repr(int_param)
     print repr(float_param+float(int_param))
     return float_param+float(int_param)
@@ -38,9 +39,9 @@ cdef public object make_class(void* env):
 cdef public object call_a(void* env):
     cdef object a
     cdef clp.DATA_OBJECT data
-    if clp.ArgCountCheck(env, "call_a", clp.EXACTLY, 1) != 1:
+    if clp.EnvArgCountCheck(env, "call_a", clp.EXACTLY, 1) != 1:
         return <object>(NULL)
-    clp.RtnUnknown(env, 1, &data)
+    clp.EnvRtnUnknown(env, 1, &data)
     if data.type == clp.EXTERNAL_ADDRESS:
         a = <object>data.value
         a.a()

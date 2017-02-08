@@ -16,13 +16,13 @@ cdef extern from "clips.h":
     cdef int FACT_ADDRESS
     cdef int INSTANCE_NAME
     ctypedef dataObject DATA_OBJECT
-    int ArgCountCheck(void* env, char* functionName, int restr, int count)
-    int ArgRangeCheck(void* env, char* functionName, int min, int max)
-    int RtnArgCount(void* env)
-    char*    RtnLexeme(void* env, int argumentPosition)
-    double   RtnDouble(void* env, int argumentPosition)
-    long     RtnLong(void* env, int argumentPosition)
-    void*    RtnUnknown(void* env, int argumentPosition, DATA_OBJECT *data)
+    int EnvArgCountCheck(void* env, char* functionName, int restr, int count)
+    int EnvArgRangeCheck(void* env, char* functionName, int min, int max)
+    int EnvRtnArgCount(void* env)
+    char*    EnvRtnLexeme(void* env, int argumentPosition)
+    double   EnvRtnDouble(void* env, int argumentPosition)
+    long     EnvRtnLong(void* env, int argumentPosition)
+    void*    EnvRtnUnknown(void* env, int argumentPosition, DATA_OBJECT *data)
     ## Datatypes
     char  *ValueToString(void* value)
     double ValueToDouble(void* value)
@@ -52,9 +52,9 @@ cdef inline object getPyObjectFromArgs(void* env, char* function, int position):
     cdef object obj
     cdef DATA_OBJECT data
 
-    if ArgCountCheck(env, function, AT_LEAST, position) == 0:
+    if EnvArgCountCheck(env, function, AT_LEAST, position) == 0:
         return None
-    RtnUnknown(env, position, &data)
+    EnvRtnUnknown(env, position, &data)
     if data.type == EXTERNAL_ADDRESS:
         obj = <object>data.value
         return <object>obj
@@ -63,15 +63,15 @@ cdef inline object getPyObjectFromArgs(void* env, char* function, int position):
 cdef inline getArgument(void* env, char* function, int position):
     cdef DATA_OBJECT data
 
-    if ArgCountCheck(env, function, AT_LEAST, position) == 0:
+    if EnvArgCountCheck(env, function, AT_LEAST, position) == 0:
         return None
-    RtnUnknown(env, position, &data)
+    EnvRtnUnknown(env, position, &data)
     if data.type == FLOAT:
-        return RtnDouble(env, position)
+        return EnvRtnDouble(env, position)
     elif data.type == INTEGER:
-        return RtnLong(env, position)
+        return EnvRtnLong(env, position)
     elif data.type in [SYMBOL, STRING]:
-        return RtnLexeme(env, position)
+        return EnvRtnLexeme(env, position)
     elif data.type == EXTERNAL_ADDRESS:
         return <object>data.value
     elif data.type == MULTIFIELD:
