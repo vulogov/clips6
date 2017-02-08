@@ -16,10 +16,12 @@ cdef class BASEENV:
 
 cdef class ENV(BASEENV):
     def __cinit__(self):
+        global ENVIRONMENTS
         BASEENV.Cinit(self)
         self.env = <void*>CreateEnvironment()
         if self.env != NULL:
             self.ready = True
+            ENVIRONMENTS.append(self)
     def DLmodule(self, module):
         return clips6_load_module(self.env, module)
     def SHELL(self):
@@ -28,3 +30,6 @@ cdef class ENV(BASEENV):
         s = SHELL()
         s.create(<void*>self.env)
         return s
+    def stop(self):
+        if self.ready == True:
+            DestroyEnvironment(<void*>self.env)

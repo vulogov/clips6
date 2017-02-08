@@ -44,6 +44,8 @@ cdef class VOID_PTR:
         return True
     cdef set(self, void* ptr):
         self.data = ptr
+    cdef void* get(self):
+        return self.data
     def __repr__(self):
         return "<CLP:VOID *0x%x>"%<int>self.data
 
