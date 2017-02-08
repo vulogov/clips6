@@ -3,7 +3,7 @@
    /*                                                     */
    /*               CLIPS Version 6.30  08/16/14          */
    /*                                                     */
-   /*                USER FUNCTIONS MODULE                */
+   /*                     MAIN MODULE                     */
    /*******************************************************/
 
 /*************************************************************/
@@ -16,12 +16,8 @@
 /*                                                           */
 /* Revision History:                                         */
 /*                                                           */
-/*      6.24: Created file to seperate UserFunctions and     */
-/*            EnvUserFunctions from main.c.                  */
-/*                                                           */
-/*      6.30: Removed conditional code for unsupported       */
-/*            compilers/operating systems (IBM_MCW,          */
-/*            MAC_MCW, and IBM_TBC).                         */
+/*      6.24: Moved UserFunctions and EnvUserFunctions to    */
+/*            the new userfunctions.c file.                  */
 /*                                                           */
 /*************************************************************/
 
@@ -47,38 +43,38 @@
 
 #include "clips.h"
 
-void UserFunctions(void);
-void EnvUserFunctions(void *);
-
-/*********************************************************/
-/* UserFunctions: Informs the expert system environment  */
-/*   of any user defined functions. In the default case, */
-/*   there are no user defined functions. To define      */
-/*   functions, either this function must be replaced by */
-/*   a function with the same name within this file, or  */
-/*   this function can be deleted from this file and     */
-/*   included in another file.                           */
-/*********************************************************/
-void UserFunctions()
+/****************************************/
+/* main: Starts execution of the expert */
+/*   system development environment.    */
+/****************************************/
+int main(
+  int argc,
+  char *argv[])
   {
-   // Use of UserFunctions is deprecated.
-   // Use EnvUserFunctions instead.
-  }
-  
-/***********************************************************/
-/* EnvUserFunctions: Informs the expert system environment */
-/*   of any user defined functions. In the default case,   */
-/*   there are no user defined functions. To define        */
-/*   functions, either this function must be replaced by   */
-/*   a function with the same name within this file, or    */
-/*   this function can be deleted from this file and       */
-/*   included in another file.                             */
-/***********************************************************/
-void EnvUserFunctions(
-  void *environment)
-  {
-#if MAC_XCD
-#pragma unused(environment)
-#endif
-  }
+   void *theEnv;
 
+   theEnv = CreateEnvironment();
+   RerouteStdin(theEnv,argc,argv);
+   CommandLoop(theEnv);
+
+   /*==================================================================*/
+   /* Control does not normally return from the CommandLoop function.  */
+   /* However if you are embedding CLIPS, have replaced CommandLoop    */
+   /* with your own embedded calls that will return to this point, and */
+   /* are running software that helps detect memory leaks, you need to */
+   /* add function calls here to deallocate memory still being used by */
+   /* CLIPS. If you have a multi-threaded application, no environments */
+   /* can be currently executing. If the ALLOW_ENVIRONMENT_GLOBALS     */
+   /* flag in setup.h has been set to TRUE (the default value), you    */
+   /* call the DeallocateEnvironmentData function which will call      */
+   /* DestroyEnvironment for each existing environment and then        */
+   /* deallocate the remaining data used to keep track of allocated    */
+   /* environments. Otherwise, you must explicitly call                */
+   /* DestroyEnvironment for each environment you create.              */
+   /*==================================================================*/
+   
+   /* DeallocateEnvironmentData(); */
+   /* DestroyEnvironment(theEnv); */
+   
+   return(-1);
+  }

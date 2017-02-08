@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.22  06/15/04            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*            EXTENDED MATH FUNCTIONS MODULE           */
    /*******************************************************/
@@ -15,12 +15,24 @@
 /*   deg-grad, grad-deg, **, and round.                      */
 /*                                                           */
 /* Principal Programmer(s):                                  */
-/*      Brian L. Donnell                                     */
+/*      Brian L. Dantes                                      */
 /*                                                           */
 /* Contributing Programmer(s):                               */
 /*      Gary D. Riley                                        */
 /*                                                           */
 /* Revision History:                                         */
+/*                                                           */
+/*      6.30: Removed conditional code for unsupported       */
+/*            compilers/operating systems (IBM_MCW and       */
+/*            MAC_MCW).                                      */
+/*                                                           */
+/*            Support for long long integers.                */
+/*                                                           */
+/*            Renamed EX_MATH compiler flag to               */
+/*            EXTENDED_MATH_FUNCTIONS.                       */
+/*                                                           */
+/*            Added const qualifiers to remove C++           */
+/*            deprecation warnings.                          */
 /*                                                           */
 /*************************************************************/
 
@@ -32,7 +44,7 @@
 
 #include "emathfun.h"
 
-#if EX_MATH
+#if EXTENDED_MATH_FUNCTIONS
 
 #include <math.h>
 
@@ -55,11 +67,11 @@
 /* LOCAL INTERNAL FUNCTION DEFINITIONS */
 /***************************************/
 
-   static int                     SingleNumberCheck(void *,char *,double *);
+   static int                     SingleNumberCheck(void *,const char *,double *);
    static int                     TestProximity(double,double);
-   static void                    DomainErrorMessage(void *,char *);
-   static void                    ArgumentOverflowErrorMessage(void *,char *);
-   static void                    SingularityErrorMessage(void *,char *);
+   static void                    DomainErrorMessage(void *,const char *);
+   static void                    ArgumentOverflowErrorMessage(void *,const char *);
+   static void                    SingularityErrorMessage(void *,const char *);
    static double                  genacosh(double);
    static double                  genasinh(double);
    static double                  genatanh(double);
@@ -111,9 +123,9 @@ globle void ExtendedMathFunctionDefinitions(
    EnvDefineFunction2(theEnv,"deg-grad", 'd', PTIEF DegGradFunction,  "DegGradFunction", "11n");
    EnvDefineFunction2(theEnv,"grad-deg", 'd', PTIEF GradDegFunction,  "GradDegFunction", "11n");
    EnvDefineFunction2(theEnv,"**",       'd', PTIEF PowFunction,      "PowFunction", "22n");
-   EnvDefineFunction2(theEnv,"round",    'l', PTIEF RoundFunction,    "RoundFunction", "11n");
+   EnvDefineFunction2(theEnv,"round",    'g', PTIEF RoundFunction,    "RoundFunction", "11n");
 #else
-#if MAC_MCW || IBM_MCW || MAC_XCD
+#if MAC_XCD
 #pragma unused(theEnv)
 #endif
 #endif
@@ -126,7 +138,7 @@ globle void ExtendedMathFunctionDefinitions(
 /************************************************************/
 static int SingleNumberCheck(
   void *theEnv,
-  char *functionName,
+  const char *functionName,
   double *theNumber)
   {
    DATA_OBJECT theValue;
@@ -157,7 +169,7 @@ static int TestProximity(
 /********************************************************/
 static void DomainErrorMessage(
   void *theEnv,
-  char *functionName)
+  const char *functionName)
   {
    PrintErrorID(theEnv,"EMATHFUN",1,FALSE);
    EnvPrintRouter(theEnv,WERROR,"Domain error for ");
@@ -174,7 +186,7 @@ static void DomainErrorMessage(
 /************************************************************/
 static void ArgumentOverflowErrorMessage(
   void *theEnv,
-  char *functionName)
+  const char *functionName)
   {
    PrintErrorID(theEnv,"EMATHFUN",2,FALSE);
    EnvPrintRouter(theEnv,WERROR,"Argument overflow for ");
@@ -191,7 +203,7 @@ static void ArgumentOverflowErrorMessage(
 /************************************************************/
 static void SingularityErrorMessage(
   void *theEnv,
-  char *functionName)
+  const char *functionName)
   {
    PrintErrorID(theEnv,"EMATHFUN",3,FALSE);
    EnvPrintRouter(theEnv,WERROR,"Singularity at asymptote in ");
@@ -729,7 +741,7 @@ globle void ModFunction(
   {
    DATA_OBJECT item1, item2;
    double fnum1, fnum2;
-   long lnum1, lnum2;
+   long long lnum1, lnum2;
 
    if (EnvArgCountCheck(theEnv,"mod",EXACTLY,2) == -1)
      {
@@ -846,25 +858,25 @@ globle double GradDegFunction(
 /* RoundFunction: H/L access routine   */
 /*   for the round function.           */
 /***************************************/
-globle long int RoundFunction(
+globle long long RoundFunction(
   void *theEnv)
   {
    DATA_OBJECT result;
 
    if (EnvArgCountCheck(theEnv,"round",EXACTLY,1) == -1)
-     { return(0L); }
+     { return(0LL); }
 
    if (EnvArgTypeCheck(theEnv,"round",1,INTEGER_OR_FLOAT,&result) == FALSE)
-     { return(0L); }
+     { return(0LL); }
 
    if (result.type == INTEGER)
      { return(ValueToLong(result.value)); }
    else
-     { return((long) ceil(ValueToDouble(result.value) - 0.5)); }
+     { return((long long) ceil(ValueToDouble(result.value) - 0.5)); }
   }
 
 /*******************************************/
-/* genacsch: Generic routine for computing */
+/* genacosh: Generic routine for computing */
 /*   the hyperbolic arccosine.             */
 /*******************************************/
 static double genacosh(
@@ -874,7 +886,7 @@ static double genacosh(
   }
 
 /*******************************************/
-/* genacsch: Generic routine for computing */
+/* genasinh: Generic routine for computing */
 /*   the hyperbolic arcsine.               */
 /*******************************************/
 static double genasinh(
@@ -894,7 +906,7 @@ static double genatanh(
   }
 
 /*******************************************/
-/* genacsch: Generic routine for computing */
+/* genasech: Generic routine for computing */
 /*   the hyperbolic arcsecant.             */
 /*******************************************/
 static double genasech(

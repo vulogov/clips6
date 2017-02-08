@@ -4,7 +4,7 @@ FILE(GLOB LIBCLIPS_SRC *.c)
 
 add_library(libclips.so SHARED ${LIBCLIPS_SRC})
 
-SET(CMAKE_C_FLAGS "-DCLIPS_MAJOR=6 -DCLIPS_MINOR=24")
+SET(CMAKE_C_FLAGS "-DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 
 set_target_properties(libclips.so PROPERTIES OUTPUT_NAME "clips")
 set_target_properties(libclips.so PROPERTIES VERSION 0.1 SOVERSION 1)

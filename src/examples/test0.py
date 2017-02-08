@@ -16,10 +16,12 @@ try:
 except clips6.EvalError, msg:
     print "Error caguht in the expression",msg
 print "EXEC():",s.EXEC("(facts)")
-print "EXEC():",s.EXEC('(printout t "Hello World !")')
+print "EXEC():",s.EXEC('(printout stdout "Hello World !" crlf )')
 print 'STRATEGY()',s.STRATEGY(clips6._BREADTH_STRATEGY)
 print 'STRATEGY()',s.STRATEGY() == clips6._BREADTH_STRATEGY
 
-print e.DLmodule("../modules/testmodule/testmod.so")
+print "e.DLmodule(...)",e.DLmodule("../modules/testmodule/testmod.so")
 #print "EVAL:"
+print "="*30
 s.EXEC('(printout t "EXEC:" (getclock) crlf)')
+s.EVAL('(create$ (getclock))')

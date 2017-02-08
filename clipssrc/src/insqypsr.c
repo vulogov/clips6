@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*               CLIPS Version 6.24  06/05/06          */
+   /*               CLIPS Version 6.30  02/05/15          */
    /*                                                     */
    /*          INSTANCE-SET QUERIES PARSER MODULE         */
    /*******************************************************/
@@ -10,17 +10,31 @@
 /* Purpose: Instance_set Queries Parsing Routines            */
 /*                                                           */
 /* Principal Programmer(s):                                  */
-/*      Brian L. Donnell                                     */
+/*      Brian L. Dantes                                      */
 /*                                                           */
 /* Contributing Programmer(s):                               */
 /*                                                           */
 /*                                                           */
 /* Revision History:                                         */
+/*                                                           */
 /*      6.23: Changed name of variable exp to theExp         */
 /*            because of Unix compiler warnings of shadowed  */
 /*            definitions.                                   */
 /*                                                           */
 /*      6.24: Renamed BOOLEAN macro type to intBool.         */
+/*                                                           */
+/*      6.30: Fixed memory leaks when error occurred.        */
+/*                                                           */
+/*            Changed integer type/precision.                */
+/*                                                           */
+/*            Support for long long integers.                */
+/*                                                           */
+/*            Added const qualifiers to remove C++           */
+/*            deprecation warnings.                          */
+/*                                                           */
+/*            Added code to keep track of pointers to        */
+/*            constructs that are contained externally to    */
+/*            to constructs, DanglingConstructs.             */
 /*                                                           */
 /*************************************************************/
 
@@ -62,10 +76,10 @@
    =========================================
    ***************************************** */
 
-static EXPRESSION *ParseQueryRestrictions(void *,EXPRESSION *,char *,struct token *);
+static EXPRESSION *ParseQueryRestrictions(void *,EXPRESSION *,const char *,struct token *);
 static intBool ReplaceClassNameWithReference(void *,EXPRESSION *);
-static int ParseQueryTestExpression(void *,EXPRESSION *,char *);
-static int ParseQueryActionExpression(void *,EXPRESSION *,char *,EXPRESSION *,struct token *);
+static int ParseQueryTestExpression(void *,EXPRESSION *,const char *);
+static int ParseQueryActionExpression(void *,EXPRESSION *,const char *,EXPRESSION *,struct token *);
 static void ReplaceInstanceVariables(void *,EXPRESSION *,EXPRESSION *,int,int);
 static void ReplaceSlotReference(void *,EXPRESSION *,EXPRESSION *,
                                  struct FunctionDefinition *,int);
@@ -109,7 +123,7 @@ static int IsQueryFunction(EXPRESSION *);
 globle EXPRESSION *ParseQueryNoAction(
   void *theEnv,
   EXPRESSION *top,
-  char *readSource)
+  const char *readSource)
   {
    EXPRESSION *insQuerySetVars;
    struct token queryInputToken;
@@ -171,7 +185,7 @@ globle EXPRESSION *ParseQueryNoAction(
 globle EXPRESSION *ParseQueryAction(
   void *theEnv,
   EXPRESSION *top,
-  char *readSource)
+  const char *readSource)
   {
    EXPRESSION *insQuerySetVars;
    struct token queryInputToken;
@@ -195,7 +209,7 @@ globle EXPRESSION *ParseQueryAction(
       return(NULL);
      }
    DecrementIndentDepth(theEnv,3);
-
+   
    if (GetType(queryInputToken) != RPAREN)
      {
       SyntaxErrorMessage(theEnv,"instance-set query function");
@@ -232,7 +246,7 @@ globle EXPRESSION *ParseQueryAction(
 static EXPRESSION *ParseQueryRestrictions(
   void *theEnv,
   EXPRESSION *top,
-  char *readSource,
+  const char *readSource,
   struct token *queryInputToken)
   {
    EXPRESSION *insQuerySetVars = NULL,*lastInsQuerySetVars = NULL,
@@ -341,7 +355,7 @@ static intBool ReplaceClassNameWithReference(
   void *theEnv,
   EXPRESSION *theExp)
   {
-   char *theClassName;
+   const char *theClassName;
    void *theDefclass;
 
    if (theExp->type == SYMBOL)
@@ -355,6 +369,11 @@ static intBool ReplaceClassNameWithReference(
         }
       theExp->type = DEFCLASS_PTR;
       theExp->value = theDefclass;
+      
+#if (! RUN_TIME) && (! BLOAD_ONLY)
+      if (! ConstructData(theEnv)->ParsingConstruct)
+        { ConstructData(theEnv)->DanglingConstructs++; }
+#endif
      }
    return(TRUE);
   }
@@ -374,7 +393,7 @@ static intBool ReplaceClassNameWithReference(
 static int ParseQueryTestExpression(
   void *theEnv,
   EXPRESSION *top,
-  char *readSource)
+  const char *readSource)
   {
    EXPRESSION *qtest;
    int error;
@@ -386,12 +405,14 @@ static int ParseQueryTestExpression(
    qtest = ArgumentParse(theEnv,readSource,&error);
    if (error == TRUE)
      {
+      ClearParsedBindNames(theEnv);
       SetParsedBindNames(theEnv,oldBindList);
       ReturnExpression(theEnv,top);
       return(FALSE);
      }
    if (qtest == NULL)
      {
+      ClearParsedBindNames(theEnv);
       SetParsedBindNames(theEnv,oldBindList);
       SyntaxErrorMessage(theEnv,"instance-set query function");
       ReturnExpression(theEnv,top);
@@ -431,15 +452,13 @@ static int ParseQueryTestExpression(
 static int ParseQueryActionExpression(
   void *theEnv,
   EXPRESSION *top,
-  char *readSource,
+  const char *readSource,
   EXPRESSION *insQuerySetVars,
   struct token *queryInputToken)
   {
    EXPRESSION *qaction,*tmpInsSetVars;
-   int error;
    struct BindInfo *oldBindList,*newBindList,*prev;
 
-   error = FALSE;
    oldBindList = GetParsedBindNames(theEnv);
    SetParsedBindNames(theEnv,NULL);
    ExpressionData(theEnv)->BreakContext = TRUE;
@@ -451,14 +470,9 @@ static int ParseQueryActionExpression(
    SavePPBuffer(theEnv,queryInputToken->printForm);
 
    ExpressionData(theEnv)->BreakContext = FALSE;
-   if (error == TRUE)
-     {
-      SetParsedBindNames(theEnv,oldBindList);
-      ReturnExpression(theEnv,top);
-      return(FALSE);
-     }
    if (qaction == NULL)
      {
+      ClearParsedBindNames(theEnv);
       SetParsedBindNames(theEnv,oldBindList);
       SyntaxErrorMessage(theEnv,"instance-set query function");
       ReturnExpression(theEnv,top);
@@ -545,8 +559,8 @@ static void ReplaceInstanceVariables(
            {
             bexp->type = FCALL;
             bexp->value = (void *) rindx_func;
-            eptr = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long) ndepth));
-            eptr->nextArg = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long) posn));
+            eptr = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long long) ndepth));
+            eptr->nextArg = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long long) posn));
             bexp->argList = eptr;
            }
          else if (sdirect == TRUE)
@@ -585,10 +599,10 @@ static void ReplaceSlotReference(
   struct FunctionDefinition *func,
   int ndepth)
   {
-   unsigned len;
+   size_t len;
    int posn,oldpp;
-   register unsigned i;
-   register char *str;
+   size_t i;
+   const char *str;
    EXPRESSION *eptr;
    struct token itkn;
 
@@ -619,9 +633,9 @@ static void ReplaceSlotReference(
             CloseStringSource(theEnv,"query-var");
             theExp->type = FCALL;
             theExp->value = (void *) func;
-            theExp->argList = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long) ndepth));
+            theExp->argList = GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long long) ndepth));
             theExp->argList->nextArg =
-              GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long) posn));
+              GenConstant(theEnv,INTEGER,(void *) EnvAddLong(theEnv,(long long) posn));
             theExp->argList->nextArg->nextArg = GenConstant(theEnv,itkn.type,itkn.value);
             break;
            }

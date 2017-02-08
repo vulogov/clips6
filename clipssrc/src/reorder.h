@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.20  01/31/02            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*                 REORDER HEADER FILE                 */
    /*******************************************************/
@@ -24,6 +24,16 @@
 /* Contributing Programmer(s):                               */
 /*                                                           */
 /* Revision History:                                         */
+/*                                                           */
+/*      6.30: Support for join network changes.              */
+/*                                                           */
+/*            Changes to the algorithm for processing        */
+/*            not/and CE groups.                             */
+/*                                                           */
+/*            Additional optimizations for combining         */
+/*            conditional elements.                          */
+/*                                                           */
+/*            Added support for hashed alpha memories.       */
 /*                                                           */
 /*************************************************************/
 
@@ -61,6 +71,8 @@ struct lhsParseNode
    unsigned short type;
    void *value;
    unsigned int negated : 1;
+   unsigned int exists : 1;
+   unsigned int existsNand : 1;
    unsigned int logical : 1;
    unsigned int multifieldSlot : 1;
    unsigned int bindingVariable : 1;
@@ -82,23 +94,37 @@ struct lhsParseNode
    short slotNumber;
    int beginNandDepth;
    int endNandDepth;
+   int joinDepth;
    struct expr *networkTest;
+   struct expr *externalNetworkTest;
+   struct expr *secondaryNetworkTest;
+   struct expr *externalLeftHash;
+   struct expr *externalRightHash;
+   struct expr *constantSelector;
+   struct expr *constantValue;
+   struct expr *leftHash;
+   struct expr *rightHash;
+   struct expr *betaHash;
    struct lhsParseNode *expression;
+   struct lhsParseNode *secondaryExpression;
    void *userData;
    struct lhsParseNode *right;
    struct lhsParseNode *bottom;
   };
 
-LOCALE struct lhsParseNode           *ReorderPatterns(void *,struct lhsParseNode *,int *);
-LOCALE struct lhsParseNode           *CopyLHSParseNodes(void *,struct lhsParseNode *);
-LOCALE void                           CopyLHSParseNode(void *,struct lhsParseNode *,struct lhsParseNode *,int);
-LOCALE struct lhsParseNode           *GetLHSParseNode(void *);
-LOCALE void                           ReturnLHSParseNodes(void *,struct lhsParseNode *);
-LOCALE struct lhsParseNode           *ExpressionToLHSParseNodes(void *,struct expr *);
-LOCALE struct expr                   *LHSParseNodesToExpression(void *,struct lhsParseNode *);
-LOCALE void                           AddInitialPatterns(void *,struct lhsParseNode *);
+   LOCALE struct lhsParseNode           *ReorderPatterns(void *,struct lhsParseNode *,int *);
+   LOCALE struct lhsParseNode           *CopyLHSParseNodes(void *,struct lhsParseNode *);
+   LOCALE void                           CopyLHSParseNode(void *,struct lhsParseNode *,struct lhsParseNode *,int);
+   LOCALE struct lhsParseNode           *GetLHSParseNode(void *);
+   LOCALE void                           ReturnLHSParseNodes(void *,struct lhsParseNode *);
+   LOCALE struct lhsParseNode           *ExpressionToLHSParseNodes(void *,struct expr *);
+   LOCALE struct expr                   *LHSParseNodesToExpression(void *,struct lhsParseNode *);
+   LOCALE void                           AddInitialPatterns(void *,struct lhsParseNode *);
+   LOCALE int                            IsExistsSubjoin(struct lhsParseNode *,int);
+   LOCALE struct lhsParseNode           *CombineLHSParseNodes(void *,struct lhsParseNode *,struct lhsParseNode *);
+   LOCALE void                           AssignPatternMarkedFlag(struct lhsParseNode *,short);
 
-#endif
+#endif /* _H_reorder */
 
 
 

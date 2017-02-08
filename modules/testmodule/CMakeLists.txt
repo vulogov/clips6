@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 2.8.5 )
-SET(CMAKE_C_FLAGS "-I../../clipssrc/src -DCLIPS_MAJOR=6 -DCLIPS_MINOR=24")
+SET(CMAKE_C_FLAGS "-I../../clipssrc/src -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 SET(CMAKE_MODULE_LINKER_FLAGS "-lclips")
 
 

@@ -17,6 +17,9 @@ class A:
 
 cdef public double get_clock(void* env):
     import time
+    f = open("/tmp/getclock", "w")
+    f.write("%d"%time.time())
+    f.close()
     return time.time()
 
 cdef public double get_number_of_params(void* env):

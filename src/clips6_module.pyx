@@ -10,18 +10,18 @@ cdef class MODULE(BASEENV):
             self.ready = True
     def currentModule(self):
         if self.ready == True:
-            SetCurrentModule(<void*>self.env, <void*>self.module)
+            EnvSetCurrentModule(<void*>self.env, <void*>self.module)
             return True
         else:
             return False
     def __repr__(self):
         if self.ready == True:
-            return "CLIPSMODULE(%s)"%GetDefmoduleName(<void*>self.env, <void*>self.module)
+            return "CLIPSMODULE(%s)"%EnvGetDefmoduleName(<void*>self.env, <void*>self.module)
         else:
             return "CLIPSMODULE(UNKNOWN)"
     def Print(self):
         if self.ready == True:
-            pp_out = GetDefmodulePPForm(<void*>self.env, <void*>self.module)
+            pp_out = EnvGetDefmodulePPForm(<void*>self.env, <void*>self.module)
             if pp_out != NULL:
                 return pp_out
             else:

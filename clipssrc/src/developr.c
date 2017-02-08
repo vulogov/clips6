@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.24  05/17/06            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*                   DEVELOPER MODULE                  */
    /*******************************************************/
@@ -18,9 +18,23 @@
 /*                                                           */
 /* Revision History:                                         */
 /*                                                           */
-/*      6.24: Converted INSTANCE_PATTERN_MATCHING to          */
-/*            DEFRULE_CONSTRUCT.                              */
-/*                                                            */
+/*      6.24: Converted INSTANCE_PATTERN_MATCHING to         */
+/*            DEFRULE_CONSTRUCT.                             */
+/*                                                           */
+/*      6.30: Added support for hashed alpha memories.       */
+/*                                                           */
+/*            Changed garbage collection algorithm.          */
+/*            Functions enable-gc-heuristics and             */
+/*            disable-gc-heuristics are no longer supported. */
+/*                                                           */
+/*            Changed integer type/precision.                */
+/*                                                           */
+/*            Added const qualifiers and type casts to       */
+/*            remove C++ warnings.                           */
+/*                                                           */
+/*            Replaced deprecated WCLIPS logical name with   */
+/*            WPROMPT.                                       */
+/*                                                           */
 /*************************************************************/
 
 #define _DEVELOPR_SOURCE_
@@ -70,13 +84,14 @@ globle void DeveloperCommands(
 #if ! RUN_TIME
    EnvDefineFunction2(theEnv,"primitives-info",'v', PTIEF PrimitiveTablesInfo,"PrimitiveTablesInfo","00");
    EnvDefineFunction2(theEnv,"primitives-usage",'v', PTIEF PrimitiveTablesUsage,"PrimitiveTablesUsage","00");
-   EnvDefineFunction2(theEnv,"enable-gc-heuristics",'v', PTIEF EnableGCHeuristics,"EnableGCHeuristics","00");
-   EnvDefineFunction2(theEnv,"disable-gc-heuristics",'v', PTIEF DisableGCHeuristics,"DisableGCHeuristics","00");
 
 #if DEFRULE_CONSTRUCT && DEFTEMPLATE_CONSTRUCT
+   EnvDefineFunction2(theEnv,"validate-fact-integrity", 'b', ValidateFactIntegrity, "ValidateFactIntegrity", "00");
+
    EnvDefineFunction2(theEnv,"show-fpn",'v', PTIEF ShowFactPatternNetwork,"ShowFactPatternNetwork","11w");
    EnvDefineFunction2(theEnv,"show-fht",'v', PTIEF ShowFactHashTable,"ShowFactHashTable","00");
 #endif
+
 #if DEFRULE_CONSTRUCT && OBJECT_SYSTEM
    EnvDefineFunction2(theEnv,"show-opn",'v',PTIEF PrintObjectPatternNetwork,
                    "PrintObjectPatternNetwork","00");
@@ -87,26 +102,6 @@ globle void DeveloperCommands(
 #endif
 
 #endif
-  }
-
-/******************************************************/
-/* EnableGCHeuristics:      */
-/******************************************************/
-globle void EnableGCHeuristics(
-  void *theEnv)
-  {
-   EnvArgCountCheck(theEnv,"enable-gc-heuristics",EXACTLY,0);
-   SetGarbageCollectionHeuristics(theEnv,TRUE);
-  }
-
-/******************************************************/
-/* DisableGCHeuristics:      */
-/******************************************************/
-globle void DisableGCHeuristics(
-  void *theEnv)
-  {
-   EnvArgCountCheck(theEnv,"disable-gc-heuristics",EXACTLY,0);
-   SetGarbageCollectionHeuristics(theEnv,FALSE);
   }
 
 /******************************************************/
@@ -175,22 +170,24 @@ globle void PrimitiveTablesInfo(
    /*========================*/
 
    EnvPrintRouter(theEnv,WDISPLAY,"Symbols: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) symbolCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) symbolCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    EnvPrintRouter(theEnv,WDISPLAY,"Integers: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) integerCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) integerCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    EnvPrintRouter(theEnv,WDISPLAY,"Floats: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) floatCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) floatCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    EnvPrintRouter(theEnv,WDISPLAY,"BitMaps: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) bitMapCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) bitMapCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
-   //EnvPrintRouter(theEnv,WDISPLAY,"Ephemerals: ");
-   //PrintLongInteger(theEnv,WDISPLAY,(long) EphemeralSymbolCount());
-   //EnvPrintRouter(theEnv,WDISPLAY,"\n");
+   /*
+   EnvPrintRouter(theEnv,WDISPLAY,"Ephemerals: ");
+   PrintLongInteger(theEnv,WDISPLAY,(long long) EphemeralSymbolCount());
+   EnvPrintRouter(theEnv,WDISPLAY,"\n");
+   */
   }
-
+  
 #define COUNT_SIZE 21
 
 /******************************************************/
@@ -212,9 +209,9 @@ globle void PrimitiveTablesUsage(
    for (i = 0; i < 21; i++)
      {
       symbolCounts[i] = 0;
-      floatCounts[i] = 0;
+      floatCounts[i] = 0; 
      }
-
+     
    /*====================================*/
    /* Count entries in the symbol table. */
    /*====================================*/
@@ -224,11 +221,11 @@ globle void PrimitiveTablesUsage(
      {
       symbolCount = 0;
       for (symbolPtr = symbolArray[i]; symbolPtr != NULL; symbolPtr = symbolPtr->next)
-        {
+        { 
          symbolCount++;
          totalSymbolCount++;
         }
-
+           
       if (symbolCount < (COUNT_SIZE - 1))
         { symbolCounts[symbolCount]++; }
       else
@@ -238,17 +235,17 @@ globle void PrimitiveTablesUsage(
    /*===================================*/
    /* Count entries in the float table. */
    /*===================================*/
-
+   
    floatArray = GetFloatTable(theEnv);
    for (i = 0; i < FLOAT_HASH_SIZE; i++)
      {
       floatCount = 0;
       for (floatPtr = floatArray[i]; floatPtr != NULL; floatPtr = floatPtr->next)
-        {
+        { 
          floatCount++;
          totalFloatCount++;
         }
-
+           
       if (floatCount < (COUNT_SIZE - 1))
         { floatCounts[floatCount]++; }
       else
@@ -261,24 +258,24 @@ globle void PrimitiveTablesUsage(
    /*========================*/
 
    EnvPrintRouter(theEnv,WDISPLAY,"Total Symbols: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) totalSymbolCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) totalSymbolCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    for (i = 0; i < COUNT_SIZE; i++)
      {
-      PrintLongInteger(theEnv,WDISPLAY,(long) i);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) i);
       EnvPrintRouter(theEnv,WDISPLAY," ");
-      PrintLongInteger(theEnv,WDISPLAY,(long) symbolCounts[i]);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) symbolCounts[i]);
       EnvPrintRouter(theEnv,WDISPLAY,"\n");
      }
 
    EnvPrintRouter(theEnv,WDISPLAY,"\nTotal Floats: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) totalFloatCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) totalFloatCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    for (i = 0; i < COUNT_SIZE; i++)
      {
-      PrintLongInteger(theEnv,WDISPLAY,(long) i);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) i);
       EnvPrintRouter(theEnv,WDISPLAY," ");
-      PrintLongInteger(theEnv,WDISPLAY,(long) floatCounts[i]);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) floatCounts[i]);
       EnvPrintRouter(theEnv,WDISPLAY,"\n");
      }
 
@@ -286,6 +283,62 @@ globle void PrimitiveTablesUsage(
 
 #if DEFRULE_CONSTRUCT && DEFTEMPLATE_CONSTRUCT
 
+/***********************************************/
+/* ValidateFactIntegrity: Command for checking */
+/*   the facts for atom value integrity.       */
+/***********************************************/
+globle intBool ValidateFactIntegrity(
+  void *theEnv)
+  {
+   struct fact *theFact;
+   struct multifield *theSegment;
+   int i;
+   SYMBOL_HN *theSymbol;
+   FLOAT_HN *theFloat;
+   INTEGER_HN *theInteger;
+     
+   if (((struct environmentData *) theEnv)->initialized == FALSE)
+     { return TRUE; }
+
+   for (theFact = (struct fact *) EnvGetNextFact(theEnv,NULL);
+        theFact != NULL;
+        theFact = (struct fact *) EnvGetNextFact(theEnv,theFact))
+     {
+      if (theFact->factHeader.busyCount <= 0)
+        { return FALSE; }
+      
+      theSegment = &theFact->theProposition;
+      
+      for (i = 0 ; i < (int) theSegment->multifieldLength ; i++)
+        {
+         if ((theSegment->theFields[i].type == SYMBOL) ||
+             (theSegment->theFields[i].type == STRING) ||
+             (theSegment->theFields[i].type == INSTANCE_NAME))
+           {
+            theSymbol = (SYMBOL_HN *) theSegment->theFields[i].value;
+            if (theSymbol->count <= 0)
+              { return FALSE; }
+           }
+
+         if (theSegment->theFields[i].type == INTEGER)
+           {
+            theInteger = (INTEGER_HN *) theSegment->theFields[i].value;
+            if (theInteger->count <= 0)
+              { return FALSE; }
+           }
+
+         if (theSegment->theFields[i].type == FLOAT)
+           {
+            theFloat = (FLOAT_HN *) theSegment->theFields[i].value;
+            if (theFloat->count <= 0)
+              { return FALSE; }
+           }
+        }
+     }
+     
+   return TRUE;
+  }
+  
 /*******************************************************/
 /* ShowFactPatternNetwork: Command for displaying the  */
 /*   fact pattern network for a specified deftemplate. */
@@ -295,7 +348,7 @@ globle void ShowFactPatternNetwork(
   {
    struct factPatternNode *patternPtr;
    struct deftemplate *theDeftemplate;
-   char *theName;
+   const char *theName;
    int depth = 0, i;
 
    theName = GetConstructName(theEnv,"show-fpn","template name");
@@ -314,18 +367,21 @@ globle void ShowFactPatternNetwork(
          EnvPrintRouter(theEnv,WDISPLAY,"MF");
          if (patternPtr->header.endSlot) EnvPrintRouter(theEnv,WDISPLAY,")");
          else EnvPrintRouter(theEnv,WDISPLAY,"*");
-         PrintLongInteger(theEnv,WDISPLAY,(long) patternPtr->leaveFields);
+         PrintLongInteger(theEnv,WDISPLAY,(long long) patternPtr->leaveFields);
          EnvPrintRouter(theEnv,WDISPLAY," ");
         }
 
       EnvPrintRouter(theEnv,WDISPLAY,"Slot: ");
 
-      PrintLongInteger(theEnv,WDISPLAY,(long) patternPtr->whichSlot);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) patternPtr->whichSlot);
       EnvPrintRouter(theEnv,WDISPLAY," Field: ");
-      PrintLongInteger(theEnv,WDISPLAY,(long) patternPtr->whichField);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) patternPtr->whichField);
       EnvPrintRouter(theEnv,WDISPLAY," Expression: ");
       if (patternPtr->networkTest == NULL) EnvPrintRouter(theEnv,WDISPLAY,"None");
       else PrintExpression(theEnv,WDISPLAY,patternPtr->networkTest);
+      EnvPrintRouter(theEnv,WDISPLAY," RightHash: ");
+      if (patternPtr->header.rightHash == NULL) EnvPrintRouter(theEnv,WDISPLAY,"None");
+      else PrintExpression(theEnv,WDISPLAY,patternPtr->header.rightHash);
       EnvPrintRouter(theEnv,WDISPLAY,"\n");
 
       if (patternPtr->nextLevel == NULL)
@@ -398,10 +454,10 @@ static void PrintOPNLevel(
         EnvPrintRouter(theEnv,WDISPLAY,"+");
       EnvPrintRouter(theEnv,WDISPLAY,ValueToString(FindIDSlotName(theEnv,pptr->slotNameID)));
       EnvPrintRouter(theEnv,WDISPLAY," (");
-      PrintLongInteger(theEnv,WDISPLAY,(long) pptr->slotNameID);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) pptr->slotNameID);
       EnvPrintRouter(theEnv,WDISPLAY,") ");
       EnvPrintRouter(theEnv,WDISPLAY,pptr->endSlot ? "EPF#" : "PF#");
-      PrintLongInteger(theEnv,WDISPLAY,(long) pptr->whichField);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) pptr->whichField);
       EnvPrintRouter(theEnv,WDISPLAY," ");
       EnvPrintRouter(theEnv,WDISPLAY,pptr->multifieldNode ? "$? " : "? ");
       if (pptr->networkTest != NULL)
@@ -436,6 +492,12 @@ static void PrintOPNLevel(
                    }
                 }
            }
+         if (alphaPtr->header.rightHash != NULL)
+           {
+            EnvPrintRouter(theEnv,WDISPLAY," RH: ");
+            PrintExpression(theEnv,WDISPLAY,alphaPtr->header.rightHash);
+           }
+
          EnvPrintRouter(theEnv,WDISPLAY,"\n");
          alphaPtr = alphaPtr->nxtInGroup;
         }
@@ -470,7 +532,7 @@ globle void InstanceTableUsage(
 
    for (i = 0; i < COUNT_SIZE; i++)
      { instanceCounts[i] = 0; }
-
+     
    /*======================================*/
    /* Count entries in the instance table. */
    /*======================================*/
@@ -479,11 +541,11 @@ globle void InstanceTableUsage(
      {
       instanceCount = 0;
       for (ins = InstanceData(theEnv)->InstanceTable[i]; ins != NULL; ins = ins->nxtHash)
-        {
+        { 
          instanceCount++;
          totalInstanceCount++;
         }
-
+           
       if (instanceCount < (COUNT_SIZE - 1))
         { instanceCounts[instanceCount]++; }
       else
@@ -495,15 +557,91 @@ globle void InstanceTableUsage(
    /*========================*/
 
    EnvPrintRouter(theEnv,WDISPLAY,"Total Instances: ");
-   PrintLongInteger(theEnv,WDISPLAY,(long) totalInstanceCount);
+   PrintLongInteger(theEnv,WDISPLAY,(long long) totalInstanceCount);
    EnvPrintRouter(theEnv,WDISPLAY,"\n");
    for (i = 0; i < COUNT_SIZE; i++)
      {
-      PrintLongInteger(theEnv,WDISPLAY,(long) i);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) i);
       EnvPrintRouter(theEnv,WDISPLAY," ");
-      PrintLongInteger(theEnv,WDISPLAY,(long) instanceCounts[i]);
+      PrintLongInteger(theEnv,WDISPLAY,(long long) instanceCounts[i]);
       EnvPrintRouter(theEnv,WDISPLAY,"\n");
      }
+  }
+  
+#endif
+
+#if DEFRULE_CONSTRUCT
+ 
+/******************/
+/* ExamineMemory: */
+/******************/
+static void ExamineMemory(
+  void *theEnv,
+  struct joinNode *theJoin,
+  struct betaMemory *theMemory)  
+  {
+#if MAC_XCD
+#pragma unused(theJoin)
+#endif
+   if (theMemory->size > 10000)
+     { 
+      /* Set a break point here */
+     }
+  }
+  
+/*************************/
+/* TraverseBetaMemories: */
+/*************************/
+static void TraverseBetaMemories(
+  void *theEnv,
+  struct joinNode *theJoin)
+  {
+   if (theJoin == NULL) 
+     { return; }
+     
+   if (theJoin->lastLevel != NULL)
+     { TraverseBetaMemories(theEnv,theJoin->lastLevel); }
+     
+   if (theJoin->depth > 2)
+     { ExamineMemory(theEnv,theJoin,theJoin->leftMemory); }
+   
+   if (theJoin->joinFromTheRight)
+     { TraverseBetaMemories(theEnv,(struct joinNode *) theJoin->rightSideEntryStructure); }
+
+   if ((theJoin->joinFromTheRight) &&
+       (((struct joinNode *) (theJoin->rightSideEntryStructure))->depth > 1))
+     { ExamineMemory(theEnv,theJoin,theJoin->rightMemory); }
+  }
+
+/***********************************/  
+/* ValidateRuleBetaMemoriesAction: */
+/***********************************/  
+static void ValidateRuleBetaMemoriesAction(
+  void *theEnv,
+  struct constructHeader *theConstruct,
+  void *buffer)
+  {
+#if MAC_XCD
+#pragma unused(buffer)
+#endif
+   struct defrule *rulePtr, *tmpPtr;
+
+   for (rulePtr = (struct defrule *) theConstruct, tmpPtr = rulePtr;
+        rulePtr != NULL;
+        rulePtr = rulePtr->disjunct)
+     {
+      TraverseBetaMemories(theEnv,rulePtr->lastJoin);
+     }
+  }
+  
+/************************/
+/* ValidateBetaMemories */
+/************************/
+globle void ValidateBetaMemories(
+  void *theEnv)
+  {
+  EnvPrintRouter(theEnv,WPROMPT,"ValidateBetaMemories");
+   DoForAllConstructs(theEnv,ValidateRuleBetaMemoriesAction,DefruleData(theEnv)->DefruleModuleIndex,FALSE,NULL); 
   }
 
 #endif

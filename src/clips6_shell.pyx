@@ -8,27 +8,30 @@ cdef class SHELL(BASEENV):
         if self.isReady() != True:
             raise EvalError,"SHELL() is not ready"
         if stra != None:
-            SetStrategy(<void*>self.env, stra)
+            EnvSetStrategy(<void*>self.env, stra)
             return stra
         else:
-            return GetStrategy(<void*>self.env)
+            return EnvGetStrategy(<void*>self.env)
 
     def EVAL(self, cmd):
         cdef DATA_OBJECT res
 
         if self.isReady() != True:
-            raise EvalError,"SHELL() is not ready"
+            raise EvalError,"SHExxLL() is not ready"
 
         try:
-            if Eval(<void*>self.env, cmd, &res) == 1:
-                return clp2py(res)
-        except:
+            if EnvEval(<void*>self.env, cmd, &res) == 1:
+                _res = clp2py(res)
+                print "EVAL(%s):"%cmd,repr(_res)
+            else:
+                _res = None
+        except KeyboardInterrupt:
             raise EvalError,"Error in: %s"%cmd
-        raise EvalError,"Error in: %s"%cmd
+        return _res
     def RUN(self, limit=-1):
         if self.isReady() != True:
             raise ShellError(),"SHELL() is not ready"
-        return Run(<void*>self.env, limit)
+        return EnvRun(<void*>self.env, limit)
     def EXEC(self, cmd):
         if self.isReady() != True:
             raise EvalError, "SHELL() is not ready"

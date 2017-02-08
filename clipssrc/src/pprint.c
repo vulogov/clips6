@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.24  06/05/06            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*                 PRETTY PRINT MODULE                 */
    /*******************************************************/
@@ -15,12 +15,19 @@
 /*                                                           */
 /* Contributing Programmer(s):                               */
 /*      Chris Culbert                                        */
-/*      Brian Donnell                                        */
+/*      Brian Dantes                                         */
 /*                                                           */
 /* Revision History:                                         */
 /*                                                           */
 /*      6.24: Corrected code generating compilation          */
 /*            warnings.                                      */
+/*                                                           */
+/*      6.30: Changed integer type/precision.                */
+/*                                                           */
+/*            Used genstrcpy instead of strcpy.              */
+/*                                                           */             
+/*            Added const qualifiers to remove C++           */
+/*            deprecation warnings.                          */
 /*                                                           */
 /*************************************************************/
 
@@ -36,6 +43,7 @@
 #include "constant.h"
 #include "envrnmnt.h"
 #include "memalloc.h"
+#include "sysdep.h"
 #include "utility.h"
 
 #include "pprint.h"
@@ -54,7 +62,7 @@ globle void InitializePrettyPrintData(
   void *theEnv)
   {
    AllocateEnvironmentData(theEnv,PRETTY_PRINT_DATA,sizeof(struct prettyPrintData),DeallocatePrettyPrintData);
-
+   
    PrettyPrintData(theEnv)->PPBufferEnabled = TRUE;
   }
 
@@ -65,7 +73,7 @@ globle void InitializePrettyPrintData(
 static void DeallocatePrettyPrintData(
   void *theEnv)
   {
-   if (PrettyPrintData(theEnv)->PrettyPrintBuffer != NULL)
+   if (PrettyPrintData(theEnv)->PrettyPrintBuffer != NULL) 
      { rm(theEnv,PrettyPrintData(theEnv)->PrettyPrintBuffer,PrettyPrintData(theEnv)->PPBufferMax); }
   }
 
@@ -102,18 +110,16 @@ globle void DestroyPPBuffer(void *theEnv)
 /*********************************************/
 globle void SavePPBuffer(
   void *theEnv,
-  char *str)
+  const char *str)
   {
-   long int longSize;
-   int normalSize;
-   int increment;
+   size_t increment;
 
    /*==========================================*/
    /* If the pretty print buffer isn't needed, */
    /* then don't bother writing to it.         */
    /*==========================================*/
 
-   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) || (! PrettyPrintData(theEnv)->PPBufferEnabled))
+   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) || (! PrettyPrintData(theEnv)->PPBufferEnabled)) 
      { return; }
 
    /*===============================*/
@@ -122,34 +128,20 @@ globle void SavePPBuffer(
 
    increment = 512;
    if (PrettyPrintData(theEnv)->PPBufferPos > increment)
-     {
-      increment = PrettyPrintData(theEnv)->PPBufferPos * 3;
-      if (increment < 0)
-        { increment = 512; }
-     }
-
-   /*==================================================*/
-   /* The pretty print buffer is limited in size to    */
-   /* the maximum size of a signed int. Any characters */
-   /* beyond that number are discarded.                */
-   /*==================================================*/
-
-   normalSize = (int) strlen(str);
-   longSize = (long) normalSize;
-   longSize += (long) PrettyPrintData(theEnv)->PPBufferPos + ((long) increment) + 1L;
-   normalSize += PrettyPrintData(theEnv)->PPBufferPos + increment + 1;
-   if (normalSize != longSize) return;
+     { increment = PrettyPrintData(theEnv)->PPBufferPos * 3; }
 
    /*================================================*/
    /* If the pretty print buffer isn't big enough to */
    /* contain the string, then increase its size.    */
    /*================================================*/
 
-   if ((int) strlen(str) + PrettyPrintData(theEnv)->PPBufferPos + 1 >= (int) PrettyPrintData(theEnv)->PPBufferMax)
+   if (strlen(str) + PrettyPrintData(theEnv)->PPBufferPos + 1 >= PrettyPrintData(theEnv)->PPBufferMax)
      {
-      PrettyPrintData(theEnv)->PrettyPrintBuffer = (char *) genrealloc(theEnv,PrettyPrintData(theEnv)->PrettyPrintBuffer,(unsigned) PrettyPrintData(theEnv)->PPBufferMax,
-                                     (unsigned) PrettyPrintData(theEnv)->PPBufferMax + increment);
-      PrettyPrintData(theEnv)->PPBufferMax += (unsigned int) increment;
+      PrettyPrintData(theEnv)->PrettyPrintBuffer = 
+         (char *) genrealloc(theEnv,PrettyPrintData(theEnv)->PrettyPrintBuffer,
+                                    PrettyPrintData(theEnv)->PPBufferMax,
+                                    PrettyPrintData(theEnv)->PPBufferMax + increment);
+      PrettyPrintData(theEnv)->PPBufferMax += increment;
      }
 
    /*==================================================*/
@@ -175,7 +167,7 @@ globle void SavePPBuffer(
 globle void PPBackup(
   void *theEnv)
   {
-   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) ||
+   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) || 
        (PrettyPrintData(theEnv)->PrettyPrintBuffer == NULL) ||
        (! PrettyPrintData(theEnv)->PPBufferEnabled))
      { return; }
@@ -192,13 +184,13 @@ globle void PPBackup(
 globle char *CopyPPBuffer(
   void *theEnv)
   {
-   unsigned length;
+   size_t length;
    char *newString;
 
    length = (1 + strlen(PrettyPrintData(theEnv)->PrettyPrintBuffer)) * (int) sizeof (char);
    newString = (char *) gm2(theEnv,length);
 
-   strcpy(newString,PrettyPrintData(theEnv)->PrettyPrintBuffer);
+   genstrcpy(newString,PrettyPrintData(theEnv)->PrettyPrintBuffer);
    return(newString);
   }
 
@@ -221,7 +213,7 @@ globle void PPCRAndIndent(
    int i;
    char buffer[120];
 
-   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) ||
+   if ((PrettyPrintData(theEnv)->PPBufferStatus == OFF) || 
        (! PrettyPrintData(theEnv)->PPBufferEnabled))
      { return; }
 
@@ -296,7 +288,7 @@ globle int SetPPBufferEnabled(
   int value)
   {
    int oldValue;
-
+   
    oldValue = PrettyPrintData(theEnv)->PPBufferEnabled;
    PrettyPrintData(theEnv)->PPBufferEnabled = value;
    return(oldValue);

@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.24  05/17/06            */
+   /*             CLIPS Version 6.30  02/04/15            */
    /*                                                     */
    /*                 FACT MANAGER MODULE                 */
    /*******************************************************/
@@ -16,9 +16,10 @@
 /*      Gary D. Riley                                        */
 /*                                                           */
 /* Contributing Programmer(s):                               */
-/*      Brian L. Donnell                                     */
+/*      Brian L. Dantes                                      */
 /*                                                           */
 /* Revision History:                                         */
+/*                                                           */
 /*      6.23: Added support for templates maintaining their  */
 /*            own list of facts.                             */
 /*                                                           */
@@ -31,6 +32,34 @@
 /*            DR0869                                         */
 /*                                                           */
 /*            Support for ppfact command.                    */
+/*                                                           */
+/*      6.30: Callback function support for assertion,       */
+/*            retraction, and modification of facts.         */
+/*                                                           */
+/*            Updates to fact pattern entity record.         */
+/*                                                           */
+/*            Changed integer type/precision.                */
+/*                                                           */
+/*            Changed garbage collection algorithm.          */
+/*                                                           */
+/*            Removed conditional code for unsupported       */
+/*            compilers/operating systems (IBM_MCW,          */
+/*            MAC_MCW, and IBM_TBC).                         */
+/*                                                           */
+/*            Added const qualifiers to remove C++           */
+/*            deprecation warnings.                          */
+/*                                                           */
+/*            Converted API macros to function calls.        */
+/*                                                           */
+/*            Removed unused global variables.               */
+/*                                                           */
+/*            Added code to prevent a clear command from     */
+/*            being executed during fact assertions via      */
+/*            JoinOperationInProgress mechanism.             */
+/*                                                           */
+/*            Added code to keep track of pointers to        */
+/*            constructs that are contained externally to    */
+/*            to constructs, DanglingConstructs.             */
 /*                                                           */
 /*************************************************************/
 
@@ -72,6 +101,7 @@
 #include "default.h"
 #include "commline.h"
 #include "envrnmnt.h"
+#include "sysdep.h"
 
 #include "engine.h"
 #include "lgcldpnd.h"
@@ -106,23 +136,24 @@ globle void InitializeFacts(
                                                      EnvRetract,
                                                      NULL,
                                                      EnvGetNextFact,
-                                                     EnvIncrementFactCount,
-                                                     EnvDecrementFactCount,NULL,NULL,NULL,NULL
+                                                     EnvDecrementFactCount,
+                                                     EnvIncrementFactCount,NULL,NULL,NULL,NULL,NULL
                                                    },
                                                    DecrementFactBasisCount,
                                                    IncrementFactBasisCount,
                                                    MatchFactFunction,
-                                                   NULL
+                                                   NULL,
+                                                   FactIsDeleted
                                                  };
-
-   struct fact dummyFact = { { NULL }, NULL, NULL, -1L, 0, 1,
-                                  NULL, NULL, NULL, NULL, { 1, 0, 0 } };
+                                                 
+   struct fact dummyFact = { { NULL, NULL, 0, 0L }, NULL, NULL, -1L, 0, 1,
+                                  NULL, NULL, NULL, NULL, { 1, 0UL, NULL, { { 0, NULL } } } };
 
    AllocateEnvironmentData(theEnv,FACTS_DATA,sizeof(struct factsData),DeallocateFactData);
 
-   memcpy(&FactData(theEnv)->FactInfo,&factInfo,sizeof(struct patternEntityRecord));
-   dummyFact.factHeader.theInfo = &FactData(theEnv)->FactInfo;
-   memcpy(&FactData(theEnv)->DummyFact,&dummyFact,sizeof(struct fact));
+   memcpy(&FactData(theEnv)->FactInfo,&factInfo,sizeof(struct patternEntityRecord)); 
+   dummyFact.factHeader.theInfo = &FactData(theEnv)->FactInfo;    
+   memcpy(&FactData(theEnv)->DummyFact,&dummyFact,sizeof(struct fact));  
    FactData(theEnv)->LastModuleIndex = -1;
 
    /*=========================================*/
@@ -168,11 +199,11 @@ globle void InitializeFacts(
 
    FactCommandDefinitions(theEnv);
    FactFunctionDefinitions(theEnv);
-
+   
    /*==============================*/
    /* Initialize fact set queries. */
    /*==============================*/
-
+  
 #if FACT_SET_QUERIES
    SetupFactQuery(theEnv);
 #endif
@@ -195,7 +226,7 @@ globle void InitializeFacts(
    FactPatternsCompilerSetup(theEnv);
 #endif
   }
-
+  
 /***********************************/
 /* DeallocateFactData: Deallocates */
 /*   environment data for facts.   */
@@ -205,13 +236,13 @@ static void DeallocateFactData(
   {
    struct factHashEntry *tmpFHEPtr, *nextFHEPtr;
    struct fact *tmpFactPtr, *nextFactPtr;
-   int i;
+   unsigned long i;
    struct patternMatch *theMatch, *tmpMatch;
-
-   for (i = 0; i < SIZE_FACT_HASH; i++)
+   
+   for (i = 0; i < FactData(theEnv)->FactHashTableSize; i++) 
      {
       tmpFHEPtr = FactData(theEnv)->FactHashTable[i];
-
+      
       while (tmpFHEPtr != NULL)
         {
          nextFHEPtr = tmpFHEPtr->next;
@@ -219,16 +250,16 @@ static void DeallocateFactData(
          tmpFHEPtr = nextFHEPtr;
         }
      }
-
+  
    rm3(theEnv,FactData(theEnv)->FactHashTable,
-       sizeof(struct factHashEntry *) * SIZE_FACT_HASH);
-
+       sizeof(struct factHashEntry *) * FactData(theEnv)->FactHashTableSize);
+                 
    tmpFactPtr = FactData(theEnv)->FactList;
    while (tmpFactPtr != NULL)
      {
       nextFactPtr = tmpFactPtr->nextFact;
 
-      theMatch = (struct patternMatch *) tmpFactPtr->list;
+      theMatch = (struct patternMatch *) tmpFactPtr->list;        
       while (theMatch != NULL)
         {
          tmpMatch = theMatch->next;
@@ -236,18 +267,24 @@ static void DeallocateFactData(
          theMatch = tmpMatch;
         }
 
-      ReturnFact(theEnv,tmpFactPtr);
-      tmpFactPtr = nextFactPtr;
-     }
+      ReturnEntityDependencies(theEnv,(struct patternEntity *) tmpFactPtr);
 
+      ReturnFact(theEnv,tmpFactPtr);
+      tmpFactPtr = nextFactPtr; 
+     }
+     
    tmpFactPtr = FactData(theEnv)->GarbageFacts;
    while (tmpFactPtr != NULL)
      {
       nextFactPtr = tmpFactPtr->nextFact;
 
       ReturnFact(theEnv,tmpFactPtr);
-      tmpFactPtr = nextFactPtr;
+      tmpFactPtr = nextFactPtr; 
      }
+     
+   DeallocateCallListWithArg(theEnv,FactData(theEnv)->ListOfAssertFunctions);
+   DeallocateCallListWithArg(theEnv,FactData(theEnv)->ListOfRetractFunctions);
+   DeallocateCallListWithArg(theEnv,FactData(theEnv)->ListOfModifyFunctions);
   }
 
 /**********************************************/
@@ -256,12 +293,12 @@ static void DeallocateFactData(
 /**********************************************/
 globle void PrintFactWithIdentifier(
   void *theEnv,
-  char *logicalName,
+  const char *logicalName,
   struct fact *factPtr)
   {
    char printSpace[20];
 
-   sprintf(printSpace,"f-%-5ld ",factPtr->factIndex);
+   gensprintf(printSpace,"f-%-5lld ",factPtr->factIndex);
    EnvPrintRouter(theEnv,logicalName,printSpace);
    PrintFact(theEnv,logicalName,factPtr,FALSE,FALSE);
   }
@@ -271,12 +308,12 @@ globle void PrintFactWithIdentifier(
 /****************************************************/
 globle void PrintFactIdentifier(
   void *theEnv,
-  char *logicalName,
+  const char *logicalName,
   void *factPtr)
   {
    char printSpace[20];
 
-   sprintf(printSpace,"f-%ld",((struct fact *) factPtr)->factIndex);
+   gensprintf(printSpace,"f-%lld",((struct fact *) factPtr)->factIndex);
    EnvPrintRouter(theEnv,logicalName,printSpace);
   }
 
@@ -286,7 +323,7 @@ globle void PrintFactIdentifier(
 /********************************************/
 globle void PrintFactIdentifierInLongForm(
   void *theEnv,
-  char *logicalName,
+  const char *logicalName,
   void *factPtr)
   {
    if (PrintUtilityData(theEnv)->AddressesToStrings) EnvPrintRouter(theEnv,logicalName,"\"");
@@ -346,6 +383,20 @@ globle void IncrementFactBasisCount(
      }
   }
 
+/******************/
+/* FactIsDeleted: */
+/******************/
+globle intBool FactIsDeleted(
+  void *theEnv,
+  void *theFact)
+  {
+#if MAC_XCD
+#pragma unused(theEnv)
+#endif
+
+   return(((struct fact *) theFact)->garbage);
+  }
+
 /**************************************************/
 /* PrintFact: Displays the printed representation */
 /*   of a fact containing the relation name and   */
@@ -353,7 +404,7 @@ globle void IncrementFactBasisCount(
 /**************************************************/
 globle void PrintFact(
   void *theEnv,
-  char *logicalName,
+  const char *logicalName,
   struct fact *factPtr,
   int seperateLines,
   int ignoreDefaults)
@@ -413,6 +464,7 @@ globle intBool EnvRetract(
   {
    struct fact *theFact = (struct fact *) vTheFact;
    struct deftemplate *theTemplate = theFact->whichDeftemplate;
+   struct callFunctionItemWithArg *theRetractFunction;
 
    /*===========================================*/
    /* A fact can not be retracted while another */
@@ -442,6 +494,22 @@ globle intBool EnvRetract(
    /*======================================================*/
 
    if (theFact->garbage) return(FALSE);
+   
+   /*==========================================*/
+   /* Execute the list of functions that are   */
+   /* to be called before each fact assertion. */
+   /*==========================================*/
+
+   for (theRetractFunction = FactData(theEnv)->ListOfRetractFunctions;
+        theRetractFunction != NULL;
+        theRetractFunction = theRetractFunction->next)
+     {
+      SetEnvironmentCallbackContext(theEnv,theRetractFunction->context);
+      if (theRetractFunction->environmentAware)
+        { (*theRetractFunction->func)(theEnv,theFact); }
+      else
+        { ((void (*)(void *))(*theRetractFunction->func))(theFact); }
+     }
 
    /*============================*/
    /* Print retraction output if */
@@ -481,7 +549,7 @@ globle intBool EnvRetract(
    /*=========================================*/
    /* Remove the fact from its template list. */
    /*=========================================*/
-
+   
    if (theFact == theTemplate->lastFact)
      { theTemplate->lastFact = theFact->previousTemplateFact; }
 
@@ -497,7 +565,7 @@ globle intBool EnvRetract(
       if (theFact->nextTemplateFact != NULL)
         { theFact->nextTemplateFact->previousTemplateFact = theFact->previousTemplateFact; }
      }
-
+  
    /*=====================================*/
    /* Remove the fact from the fact list. */
    /*=====================================*/
@@ -518,15 +586,6 @@ globle intBool EnvRetract(
         { theFact->nextFact->previousFact = theFact->previousFact; }
      }
 
-   /*==================================*/
-   /* Update busy counts and ephemeral */
-   /* garbage information.             */
-   /*==================================*/
-
-   FactDeinstall(theEnv,theFact);
-   UtilityData(theEnv)->EphemeralItemCount++;
-   UtilityData(theEnv)->EphemeralItemSize += sizeof(struct fact) + (sizeof(struct field) * theFact->theProposition.multifieldLength);
-
    /*========================================*/
    /* Add the fact to the fact garbage list. */
    /*========================================*/
@@ -534,6 +593,7 @@ globle intBool EnvRetract(
    theFact->nextFact = FactData(theEnv)->GarbageFacts;
    FactData(theEnv)->GarbageFacts = theFact;
    theFact->garbage = TRUE;
+   UtilityData(theEnv)->CurrentGarbageFrame->dirty = TRUE;
 
    /*===================================================*/
    /* Reset the evaluation error flag since expressions */
@@ -572,9 +632,16 @@ globle intBool EnvRetract(
    /* executed from an embedded application.    */
    /*===========================================*/
 
-   if ((EvaluationData(theEnv)->CurrentEvaluationDepth == 0) && (! CommandLineData(theEnv)->EvaluatingTopLevelCommand) &&
-       (EvaluationData(theEnv)->CurrentExpression == NULL))
-     { PeriodicCleanup(theEnv,TRUE,FALSE); }
+   if ((UtilityData(theEnv)->CurrentGarbageFrame->topLevel) && (! CommandLineData(theEnv)->EvaluatingTopLevelCommand) &&
+       (EvaluationData(theEnv)->CurrentExpression == NULL) && (UtilityData(theEnv)->GarbageCollectionLocks == 0))
+     { CleanCurrentGarbageFrame(theEnv,NULL); }
+   
+   /*==================================*/
+   /* Update busy counts and ephemeral */
+   /* garbage information.             */
+   /*==================================*/
+
+   FactDeinstall(theEnv,theFact);
 
    /*==================================*/
    /* Return TRUE to indicate the fact */
@@ -601,11 +668,8 @@ static void RemoveGarbageFacts(
    while (factPtr != NULL)
      {
       nextPtr = factPtr->nextFact;
-      if ((factPtr->factHeader.busyCount == 0) &&
-          (((int) factPtr->depth) > EvaluationData(theEnv)->CurrentEvaluationDepth))
+      if (factPtr->factHeader.busyCount == 0)
         {
-         UtilityData(theEnv)->EphemeralItemCount--;
-         UtilityData(theEnv)->EphemeralItemSize -= sizeof(struct fact) + (sizeof(struct field) * factPtr->theProposition.multifieldLength);
          ReturnFact(theEnv,factPtr);
          if (lastPtr == NULL) FactData(theEnv)->GarbageFacts = nextPtr;
          else lastPtr->nextFact = nextPtr;
@@ -624,10 +688,12 @@ globle void *EnvAssert(
   void *theEnv,
   void *vTheFact)
   {
-   int hashValue;
+   unsigned long hashValue;
    unsigned long length, i;
    struct field *theField;
    struct fact *theFact = (struct fact *) vTheFact;
+   intBool duplicate;
+   struct callFunctionItemWithArg *theAssertFunction;
 
    /*==========================================*/
    /* A fact can not be asserted while another */
@@ -663,8 +729,8 @@ globle void *EnvAssert(
    /* then search the fact list for a duplicate fact.        */
    /*========================================================*/
 
-   hashValue = HandleFactDuplication(theEnv,theFact);
-   if (hashValue < 0) return(NULL);
+   hashValue = HandleFactDuplication(theEnv,theFact,&duplicate);
+   if (duplicate) return(NULL);
 
    /*==========================================================*/
    /* If necessary, add logical dependency links between the   */
@@ -699,17 +765,17 @@ globle void *EnvAssert(
    /*====================================*/
    /* Add the fact to its template list. */
    /*====================================*/
-
+   
    theFact->previousTemplateFact = theFact->whichDeftemplate->lastFact;
    theFact->nextTemplateFact = NULL;
-
+   
    if (theFact->whichDeftemplate->lastFact == NULL)
      { theFact->whichDeftemplate->factList = theFact; }
    else
      { theFact->whichDeftemplate->lastFact->nextTemplateFact = theFact; }
-
+     
    theFact->whichDeftemplate->lastFact = theFact;
-
+   
    /*==================================*/
    /* Set the fact index and time tag. */
    /*==================================*/
@@ -722,6 +788,22 @@ globle void *EnvAssert(
    /*=====================*/
 
    FactInstall(theEnv,theFact);
+   
+   /*==========================================*/
+   /* Execute the list of functions that are   */
+   /* to be called before each fact assertion. */
+   /*==========================================*/
+
+   for (theAssertFunction = FactData(theEnv)->ListOfAssertFunctions;
+        theAssertFunction != NULL;
+        theAssertFunction = theAssertFunction->next)
+     {
+      SetEnvironmentCallbackContext(theEnv,theAssertFunction->context);
+      if (theAssertFunction->environmentAware)
+        { (*theAssertFunction->func)(theEnv,theFact); }
+      else
+        { ((void (*)(void *))(*theAssertFunction->func))(theFact); }
+     }
 
    /*==========================*/
    /* Print assert output if   */
@@ -785,9 +867,12 @@ globle void *EnvAssert(
    /* executed from an embedded application.   */
    /*==========================================*/
 
-   if ((EvaluationData(theEnv)->CurrentEvaluationDepth == 0) && (! CommandLineData(theEnv)->EvaluatingTopLevelCommand) &&
-       (EvaluationData(theEnv)->CurrentExpression == NULL))
-     { PeriodicCleanup(theEnv,TRUE,FALSE); }
+   if ((UtilityData(theEnv)->CurrentGarbageFrame->topLevel) && (! CommandLineData(theEnv)->EvaluatingTopLevelCommand) &&
+       (EvaluationData(theEnv)->CurrentExpression == NULL) && (UtilityData(theEnv)->GarbageCollectionLocks == 0))
+     {
+      CleanCurrentGarbageFrame(theEnv,NULL);
+      CallPeriodicTasks(theEnv);
+     }
 
    /*===============================*/
    /* Return a pointer to the fact. */
@@ -866,7 +951,7 @@ globle struct fact *EnvCreateFact(
 globle intBool EnvGetFactSlot(
   void *theEnv,
   void *vTheFact,
-  char *slotName,
+  const char *slotName,
   DATA_OBJECT *theValue)
   {
    struct fact *theFact = (struct fact *) vTheFact;
@@ -929,7 +1014,7 @@ globle intBool EnvGetFactSlot(
 globle intBool EnvPutFactSlot(
   void *theEnv,
   void *vTheFact,
-  char *slotName,
+  const char *slotName,
   DATA_OBJECT *theValue)
   {
    struct fact *theFact = (struct fact *) vTheFact;
@@ -959,7 +1044,7 @@ globle intBool EnvPutFactSlot(
 
       theFact->theProposition.theFields[0].type = theValue->type;
       theFact->theProposition.theFields[0].value = DOToMultifield(theEnv,theValue);
-
+      
       return(TRUE);
      }
 
@@ -993,7 +1078,7 @@ globle intBool EnvPutFactSlot(
      { theFact->theProposition.theFields[whichSlot-1].value = DOToMultifield(theEnv,theValue); }
    else
      { theFact->theProposition.theFields[whichSlot-1].value = theValue->value; }
-
+   
    return(TRUE);
   }
 
@@ -1044,7 +1129,7 @@ globle intBool EnvAssignFactSlotDefaults(
       /*======================================================*/
       /* Assign the default value for the slot if one exists. */
       /*======================================================*/
-
+      
       if (DeftemplateSlotDefault(theEnv,theDeftemplate,slotPtr,&theResult,FALSE))
         {
          theFact->theProposition.theFields[i].type = theResult.type;
@@ -1059,7 +1144,7 @@ globle intBool EnvAssignFactSlotDefaults(
 
    return(TRUE);
   }
-
+  
 /********************************************************/
 /* DeftemplateSlotDefault: Determines the default value */
 /*   for the specified slot of a deftemplate.           */
@@ -1206,11 +1291,10 @@ globle struct fact *CreateFactBySize(
    if (size <= 0) newSize = 1;
    else newSize = size;
 
-   theFact = get_var_struct2(theEnv,fact,sizeof(struct field) * (newSize - 1));
+   theFact = get_var_struct(theEnv,fact,sizeof(struct field) * (newSize - 1));
 
-   theFact->depth = (unsigned) EvaluationData(theEnv)->CurrentEvaluationDepth;
    theFact->garbage = FALSE;
-   theFact->factIndex = 0L;
+   theFact->factIndex = 0LL;
    theFact->factHeader.busyCount = 0;
    theFact->factHeader.theInfo = &FactData(theEnv)->FactInfo;
    theFact->factHeader.dependents = NULL;
@@ -1222,7 +1306,6 @@ globle struct fact *CreateFactBySize(
    theFact->list = NULL;
 
    theFact->theProposition.multifieldLength = size;
-   theFact->theProposition.depth = (short) EvaluationData(theEnv)->CurrentEvaluationDepth;
    theFact->theProposition.busyCount = 0;
 
    return(theFact);
@@ -1236,21 +1319,27 @@ globle void ReturnFact(
   void *theEnv,
   struct fact *theFact)
   {
-   struct multifield *theSegment;
-   unsigned newSize, i;
+   struct multifield *theSegment, *subSegment;
+   long newSize, i;
 
    theSegment = &theFact->theProposition;
 
    for (i = 0; i < theSegment->multifieldLength; i++)
      {
       if (theSegment->theFields[i].type == MULTIFIELD)
-        { ReturnMultifield(theEnv,(struct multifield *) theSegment->theFields[i].value); }
+        {
+         subSegment = (struct multifield *) theSegment->theFields[i].value;
+         if (subSegment->busyCount == 0)
+           { ReturnMultifield(theEnv,subSegment); }
+         else
+           { AddToMultifieldList(theEnv,subSegment); }
+        }
      }
 
    if (theFact->theProposition.multifieldLength == 0) newSize = 1;
    else newSize = theFact->theProposition.multifieldLength;
-
-   rtn_var_struct2(theEnv,fact,sizeof(struct field) * (newSize - 1),theFact);
+      
+   rtn_var_struct(theEnv,fact,sizeof(struct field) * (newSize - 1),theFact);
   }
 
 /*************************************************************/
@@ -1303,14 +1392,11 @@ globle void FactDeinstall(
 /* EnvIncrementFactCount: Increments the number */
 /*   of references to a specified fact.         */
 /************************************************/
-#if IBM_TBC
-#pragma argsused
-#endif
 globle void EnvIncrementFactCount(
   void *theEnv,
   void *factPtr)
   {
-#if MAC_MCW || IBM_MCW || MAC_XCD
+#if MAC_XCD
 #pragma unused(theEnv)
 #endif
 
@@ -1321,14 +1407,11 @@ globle void EnvIncrementFactCount(
 /* EnvDecrementFactCount: Decrements the number */
 /*   of references to a specified fact.         */
 /************************************************/
-#if IBM_TBC
-#pragma argsused
-#endif
 globle void EnvDecrementFactCount(
   void *theEnv,
   void *factPtr)
   {
-#if MAC_MCW || IBM_MCW || MAC_XCD
+#if MAC_XCD
 #pragma unused(theEnv)
 #endif
 
@@ -1424,7 +1507,7 @@ globle void *GetNextFactInScope(
 globle void EnvGetFactPPForm(
   void *theEnv,
   char *buffer,
-  unsigned bufferLength,
+  size_t bufferLength,
   void *theFact)
   {
    OpenStringDestination(theEnv,"FactPPForm",buffer,bufferLength);
@@ -1436,14 +1519,11 @@ globle void EnvGetFactPPForm(
 /* EnvFactIndex: C access routine */
 /*   for the fact-index function. */
 /**********************************/
-#if IBM_TBC
-#pragma argsused
-#endif
-globle long int EnvFactIndex(
+globle long long EnvFactIndex(
   void *theEnv,
   void *factPtr)
   {
-#if MAC_MCW || IBM_MCW || MAC_XCD
+#if MAC_XCD
 #pragma unused(theEnv)
 #endif
 
@@ -1456,11 +1536,17 @@ globle long int EnvFactIndex(
 /*************************************/
 globle void *EnvAssertString(
   void *theEnv,
-  char *theString)
+  const char *theString)
   {
    struct fact *theFact;
+   int danglingConstructs;
+   danglingConstructs = ConstructData(theEnv)->DanglingConstructs;
 
    if ((theFact = StringToFact(theEnv,theString)) == NULL) return(NULL);
+   
+   if ((! CommandLineData(theEnv)->EvaluatingTopLevelCommand) &&
+       (EvaluationData(theEnv)->CurrentExpression == NULL))
+     { ConstructData(theEnv)->DanglingConstructs = danglingConstructs; }
 
    return((void *) EnvAssert(theEnv,(void *) theFact));
   }
@@ -1472,7 +1558,7 @@ globle void *EnvAssertString(
 globle int EnvGetFactListChanged(
   void *theEnv)
   {
-   return(FactData(theEnv)->ChangeToFactList);
+   return(FactData(theEnv)->ChangeToFactList); 
   }
 
 /***********************************************************/
@@ -1492,8 +1578,8 @@ globle void EnvSetFactListChanged(
 /****************************************/
 globle unsigned long GetNumberOfFacts(
   void *theEnv)
-  {
-   return(FactData(theEnv)->NumberOfFacts);
+  {   
+   return(FactData(theEnv)->NumberOfFacts); 
   }
 
 /***********************************************************/
@@ -1524,6 +1610,13 @@ static void ResetFacts(
 static int ClearFactsReady(
   void *theEnv)
   {
+   /*======================================*/
+   /* Facts can not be deleted when a join */
+   /* operation is already in progress.    */
+   /*======================================*/
+
+   if (EngineData(theEnv)->JoinOperationInProgress) return(FALSE);
+   
    /*====================================*/
    /* Initialize the fact index to zero. */
    /*====================================*/
@@ -1557,7 +1650,7 @@ static int ClearFactsReady(
 /***************************************************/
 globle struct fact *FindIndexedFact(
   void *theEnv,
-  long int factIndexSought)
+  long long factIndexSought)
   {
    struct fact *theFact;
 
@@ -1571,6 +1664,326 @@ globle struct fact *FindIndexedFact(
 
    return(NULL);
   }
+
+/*****************************************/
+/* EnvAddAssertFunction: Adds a function */
+/*   to the ListOfAssertFunctions.       */
+/*****************************************/
+globle intBool EnvAddAssertFunction(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *),
+  int priority)
+  {
+   FactData(theEnv)->ListOfAssertFunctions =
+      AddFunctionToCallListWithArg(theEnv,name,priority,
+                                              functionPtr,
+                                              FactData(theEnv)->ListOfAssertFunctions,TRUE);
+   return(1);
+  }
+    
+/********************************************/
+/* EnvAddAssertFunctionWithContext: Adds a  */
+/*   function to the ListOfAssertFunctions. */
+/********************************************/
+globle intBool EnvAddAssertFunctionWithContext(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *),
+  int priority,
+  void *context)
+  {
+   FactData(theEnv)->ListOfAssertFunctions =
+      AddFunctionToCallListWithArgWithContext(theEnv,name,priority,functionPtr,
+                                       FactData(theEnv)->ListOfAssertFunctions,
+                                       TRUE,context);
+   return(1);
+  }
+    
+/***********************************************/
+/* EnvRemoveAssertFunction: Removes a function */
+/*   from the ListOfAssertFunctions.           */
+/***********************************************/
+globle intBool EnvRemoveAssertFunction(
+  void *theEnv,
+  const char *name)
+  {
+   int found;
+
+   FactData(theEnv)->ListOfAssertFunctions =
+      RemoveFunctionFromCallListWithArg(theEnv,name,FactData(theEnv)->ListOfAssertFunctions,&found);
+
+   if (found) return(TRUE);
+
+   return(FALSE);
+  }
+  
+/******************************************/
+/* EnvAddRetractFunction: Adds a function */
+/*   to the ListOfRetractFunctions.       */
+/******************************************/
+globle intBool EnvAddRetractFunction(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *),
+  int priority)
+  {
+   FactData(theEnv)->ListOfRetractFunctions =
+      AddFunctionToCallListWithArg(theEnv,name,priority,
+                                              functionPtr,
+                                              FactData(theEnv)->ListOfRetractFunctions,TRUE);
+   return(1);
+  }
+    
+/*********************************************/
+/* EnvAddRetractFunctionWithContext: Adds a  */
+/*   function to the ListOfRetractFunctions. */
+/*********************************************/
+globle intBool EnvAddRetractFunctionWithContext(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *),
+  int priority,
+  void *context)
+  {
+   FactData(theEnv)->ListOfRetractFunctions =
+      AddFunctionToCallListWithArgWithContext(theEnv,name,priority,functionPtr,
+                                       FactData(theEnv)->ListOfRetractFunctions,
+                                       TRUE,context);
+   return(1);
+  }
+    
+/************************************************/
+/* EnvRemoveRetractFunction: Removes a function */
+/*   from the ListOfRetractFunctions.           */
+/************************************************/
+globle intBool EnvRemoveRetractFunction(
+  void *theEnv,
+  const char *name)
+  {
+   int found;
+
+   FactData(theEnv)->ListOfRetractFunctions =
+      RemoveFunctionFromCallListWithArg(theEnv,name,FactData(theEnv)->ListOfRetractFunctions,&found);
+
+   if (found) return(TRUE);
+
+   return(FALSE);
+  }
+
+/*****************************************/
+/* EnvAddModifyFunction: Adds a function */
+/*   to the ListOfModifyFunctions.       */
+/*****************************************/
+globle intBool EnvAddModifyFunction(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *, void *),
+  int priority)
+  {
+   FactData(theEnv)->ListOfModifyFunctions =
+      AddFunctionToCallListWithArg(theEnv,name,priority,
+                                              (void (*)(void *, void *)) functionPtr,
+                                              FactData(theEnv)->ListOfModifyFunctions,TRUE);
+   return(1);
+  }
+    
+/********************************************/
+/* EnvAddModifyFunctionWithContext: Adds a  */
+/*   function to the ListOfModifyFunctions. */
+/********************************************/
+globle intBool EnvAddModifyFunctionWithContext(
+  void *theEnv,
+  const char *name,
+  void (*functionPtr)(void *, void *, void *),
+  int priority,
+  void *context)
+  {
+   FactData(theEnv)->ListOfModifyFunctions =
+      AddFunctionToCallListWithArgWithContext(theEnv,name,priority,
+                                       (void (*)(void *, void *)) functionPtr,
+                                       FactData(theEnv)->ListOfModifyFunctions,
+                                       TRUE,context);
+   return(1);
+  }
+    
+/***********************************************/
+/* EnvRemoveModifyFunction: Removes a function */
+/*   from the ListOfModifyFunctions.           */
+/***********************************************/
+globle intBool EnvRemoveModifyFunction(
+  void *theEnv,
+  const char *name)
+  {
+   int found;
+
+   FactData(theEnv)->ListOfModifyFunctions =
+      RemoveFunctionFromCallListWithArg(theEnv,name,FactData(theEnv)->ListOfModifyFunctions,&found);
+
+   if (found) return(TRUE);
+
+   return(FALSE);
+  }
+
+/*#####################################*/
+/* ALLOW_ENVIRONMENT_GLOBALS Functions */
+/*#####################################*/
+
+#if ALLOW_ENVIRONMENT_GLOBALS
+
+globle intBool AddAssertFunction(
+  const char *name,
+  void (*functionPtr)(void *,void *),
+  int priority)
+  {
+   void *theEnv;
+   
+   theEnv = GetCurrentEnvironment();
+
+   FactData(theEnv)->ListOfAssertFunctions =
+       AddFunctionToCallListWithArg(theEnv,name,priority,(void (*)(void *, void *)) functionPtr,
+                             FactData(theEnv)->ListOfAssertFunctions,TRUE);
+   return(1);
+  }
+
+globle intBool AddModifyFunction(
+  const char *name,
+  void (*functionPtr)(void *,void *,void *),
+  int priority)
+  {
+   void *theEnv;
+   
+   theEnv = GetCurrentEnvironment();
+
+   FactData(theEnv)->ListOfModifyFunctions =
+       AddFunctionToCallListWithArg(theEnv,name,priority,(void (*)(void *, void *)) functionPtr,
+                             FactData(theEnv)->ListOfModifyFunctions,TRUE);
+   return(1);
+  }
+
+globle intBool AddRetractFunction(
+  const char *name,
+  void (*functionPtr)(void *,void *),
+  int priority)
+  {
+   void *theEnv;
+   
+   theEnv = GetCurrentEnvironment();
+
+   FactData(theEnv)->ListOfRetractFunctions =
+       AddFunctionToCallListWithArg(theEnv,name,priority,(void (*)(void *, void *)) functionPtr,
+                             FactData(theEnv)->ListOfRetractFunctions,TRUE);
+   return(1);
+  }
+
+globle void *Assert(
+  void *vTheFact)
+  {
+   return EnvAssert(GetCurrentEnvironment(),vTheFact);
+  }
+
+globle void *AssertString(
+  const char *theString)
+  {
+   return EnvAssertString(GetCurrentEnvironment(),theString);
+  }
+
+globle intBool AssignFactSlotDefaults(
+  void *vTheFact)
+  {
+   return EnvAssignFactSlotDefaults(GetCurrentEnvironment(),vTheFact);
+  }
+
+globle struct fact *CreateFact(
+  void *vTheDeftemplate)
+  {
+   return EnvCreateFact(GetCurrentEnvironment(),vTheDeftemplate);
+  }
+
+globle void DecrementFactCount(
+  void *factPtr)
+  {
+   EnvDecrementFactCount(GetCurrentEnvironment(),factPtr);
+  }
+
+globle long long FactIndex(
+  void *factPtr)
+  {
+   return(EnvFactIndex(GetCurrentEnvironment(),factPtr));
+  }
+
+globle int GetFactListChanged()
+  {
+   return EnvGetFactListChanged(GetCurrentEnvironment());
+  }
+
+globle void GetFactPPForm(
+  char *buffer,
+  unsigned bufferLength,
+  void *theFact)
+  {
+   EnvGetFactPPForm(GetCurrentEnvironment(),buffer,bufferLength,theFact);
+  }
+
+globle intBool GetFactSlot(
+  void *vTheFact,
+  const char *slotName,
+  DATA_OBJECT *theValue)
+  {
+   return(EnvGetFactSlot(GetCurrentEnvironment(),vTheFact,slotName,theValue));
+  }
+
+globle void *GetNextFact(
+  void *factPtr)
+  {
+   return EnvGetNextFact(GetCurrentEnvironment(),factPtr);
+  }
+
+globle void IncrementFactCount(
+  void *factPtr)
+  {
+   EnvIncrementFactCount(GetCurrentEnvironment(),factPtr);
+  }
+
+globle intBool PutFactSlot(
+  void *vTheFact,
+  const char *slotName,
+  DATA_OBJECT *theValue)
+  {
+   return EnvPutFactSlot(GetCurrentEnvironment(),vTheFact,slotName,theValue);
+  }
+
+globle intBool RemoveAssertFunction(
+  const char *name)
+  {
+   return EnvRemoveAssertFunction(GetCurrentEnvironment(),name);
+  }
+
+globle intBool RemoveModifyFunction(
+  const char *name)
+  {
+   return EnvRemoveModifyFunction(GetCurrentEnvironment(),name);
+  }
+
+globle intBool RemoveRetractFunction(
+  const char *name)
+  {
+   return EnvRemoveRetractFunction(GetCurrentEnvironment(),name);
+  }
+
+globle intBool Retract(
+  void *vTheFact)
+  {
+   return EnvRetract(GetCurrentEnvironment(),vTheFact);
+  }
+
+globle void SetFactListChanged(
+  int value)
+  {
+   EnvSetFactListChanged(GetCurrentEnvironment(),value);
+  }
+
+#endif /* ALLOW_ENVIRONMENT_GLOBALS */
 
 #endif /* DEFTEMPLATE_CONSTRUCT && DEFRULE_CONSTRUCT */
 

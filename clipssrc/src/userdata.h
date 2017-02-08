@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.20  01/31/02            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*                USER DATA HEADER FILE                */
    /*******************************************************/
@@ -38,14 +38,14 @@ struct userData
 
 typedef struct userData USER_DATA;
 typedef struct userData * USER_DATA_PTR;
-
+  
 struct userDataRecord
   {
    unsigned char dataID;
    void *(*createUserData)(void *);
    void (*deleteUserData)(void *,void *);
   };
-
+  
 typedef struct userDataRecord USER_DATA_RECORD;
 typedef struct userDataRecord * USER_DATA_RECORD_PTR;
 
@@ -54,7 +54,7 @@ typedef struct userDataRecord * USER_DATA_RECORD_PTR;
 #define USER_DATA_DATA 56
 
 struct userDataData
-  {
+  { 
    struct userDataRecord *UserDataRecordArray[MAXIMUM_USER_DATA_RECORDS];
    unsigned char UserDataRecordCount;
   };

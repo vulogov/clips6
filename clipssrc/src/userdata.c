@@ -1,7 +1,7 @@
    /*******************************************************/
    /*      "C" Language Integrated Production System      */
    /*                                                     */
-   /*             CLIPS Version 6.20  01/31/02            */
+   /*             CLIPS Version 6.30  08/16/14            */
    /*                                                     */
    /*                  USER DATA MODULE                   */
    /*******************************************************/
@@ -50,7 +50,7 @@ globle unsigned char InstallUserDataRecord(
    UserDataData(theEnv)->UserDataRecordArray[UserDataData(theEnv)->UserDataRecordCount] = theRecord;
    return(UserDataData(theEnv)->UserDataRecordCount++);
   }
-
+  
 /*****************************************************/
 /* FetchUserData: Searches for user data information */
 /*   from a list of user data structures. A new user */
@@ -70,13 +70,13 @@ globle struct userData *FetchUserData(
       if (theData->dataID == userDataID)
         { return(theData); }
      }
-
+     
    theData = (struct userData *) (*UserDataData(theEnv)->UserDataRecordArray[userDataID]->createUserData)(theEnv);
    theData->dataID = userDataID;
    theData->next = *theList;
    *theList = theData;
-
-   return(theData);
+   
+   return(theData);   
   }
 
 /*****************************************************/
@@ -90,7 +90,7 @@ globle struct userData *TestUserData(
   struct userData *theList)
   {
    struct userData *theData;
-
+   
    for (theData = theList;
         theData != NULL;
         theData = theData->next)
@@ -98,8 +98,8 @@ globle struct userData *TestUserData(
       if (theData->dataID == userDataID)
         { return(theData); }
      }
-
-   return(NULL);
+        
+   return(NULL);   
   }
 
 /***************************************************************/
@@ -110,7 +110,7 @@ globle void ClearUserDataList(
   struct userData *theList)
   {
    struct userData *nextData;
-
+   
    while (theList != NULL)
      {
       nextData = theList->next;
@@ -118,7 +118,7 @@ globle void ClearUserDataList(
       theList = nextData;
      }
   }
-
+  
 /*************************************************/
 /* DeleteUserData: Removes user data information */
 /*   from a list of user data structures.        */
@@ -129,25 +129,25 @@ globle struct userData *DeleteUserData(
   struct userData *theList)
   {
    struct userData *theData, *lastData = NULL;
-
+   
    for (theData = theList;
         theData != NULL;
         theData = theData->next)
      {
       if (theData->dataID == userDataID)
-        {
+        { 
          if (lastData == NULL)
            { theList = theData->next; }
          else
            { lastData->next = theData->next; }
-
+            
          (*UserDataData(theEnv)->UserDataRecordArray[userDataID]->deleteUserData)(theEnv,theData);
          return(theList);
         }
-
+        
       lastData = theData;
      }
-
-   return(theList);
+        
+   return(theList);   
   }
 
