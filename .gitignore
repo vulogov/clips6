@@ -90,7 +90,6 @@ ENV/
 
 clipssrc/Makefile
 
-*.cmake
 
 *.marks
 
@@ -138,3 +137,17 @@ clipssrc/clips_core_source_630/*
 
 clipssrc/src.0
 
+
+bin/cmake_install.cmake
+
+bin/CMakeFiles/CMakeDirectoryInformation.cmake
+
+clipssrc/src/CTestTestfile.cmake
+
+cmake_install.cmake
+
+bin/CTestTestfile.cmake
+
+clipssrc/CTestTestfile.cmake
+
+CTestTestfile.cmake
