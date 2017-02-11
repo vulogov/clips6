@@ -14,21 +14,33 @@ class ROUTER:
         return out
     def Write(self, buf):
         self.buffer = self.buffer + buf
+
 class ROUTERCTL:
     def __init__(self):
         self.routers = {}
+        self.envs = {}
     def register(self, name):
         if name not in self.routers.keys():
             self.routers[name] = ROUTER()
             return True
         return False
+    def envRegister(self, env, name):
+        if env not in self.envs.keys():
+            self.envs[env] = [name, ]
+        else:
+            if name not in self.envs[env]:
+                self.envs[env].append(name)
     def remove(self, name):
         if name not in self.routers.keys():
             return False
+        for e in self.envs.keys():
+            if name in self.envs[e]:
+                self.envs[e].remove(name)
+                e.DropIO(name)
         del self.routers[name]
         return True
     def router(self, name):
-        if name not in self.routers.keys():
+        if name in self.routers.keys():
             return self.routers[name]
         return None
 
@@ -46,6 +58,11 @@ atexit.register(clips6_bufrouters_unload)
 
 cdef extern int _RegisterIO(char *logicalName)
 
+def envRegisterIO(env, logicalName):
+    global ROUTERS
+
+    ROUTERS.envRegister(env, logicalName)
+
 cdef  int RegisterIO(void* theEnv, char *logicalName):
     global ROUTERS
 
@@ -53,8 +70,16 @@ cdef  int RegisterIO(void* theEnv, char *logicalName):
     if ROUTERS.register(logicalName) == True:
         ## Then let the CLIPS know that the buffer exists
         if cRegisterIO(<void*>theEnv, logicalName) == 1:
-            return 1
-    return 0
+            return (TRUE)
+    return (FALSE)
+
+cdef  int DropIO(void* theEnv, char *logicalName):
+    global ROUTERS
+
+    if ROUTERS.routers.has_key(logicalName) == True:
+        if cDropIO(<void*>theEnv, logicalName) == 1:
+            return (TRUE)
+        return (FALSE)
 
 
 cdef public int  FindCLP6IO(void *theEnv, const char *logicalName):

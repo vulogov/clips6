@@ -23,8 +23,13 @@ cdef class ENV(BASEENV):
 			# InitializeDefaultRouters(self.env)
 			self.ready = True
 			ENVIRONMENTS.append(self)
-	def Router(self, logicalName):
-		return RegisterIO(self.env, logicalName)
+	def RouterIO(self, logicalName):
+		res = RegisterIO(self.env, logicalName)
+		if res != 0:
+			envRegisterIO(self, logicalName)
+		return res
+	def DropIO(self, logicalName):
+		return DropIO(self.env, logicalName)
 	def DLmodule(self, module):
 		return clips6_load_module(self.env, module)
 	def SHELL(self):

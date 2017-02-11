@@ -131,3 +131,5 @@ cdef extern from "clips.h":
 cdef extern from "clips6_io.h":
     int RegisterIO(void *theEnv, char *logicalName)
     int cRegisterIO(void *theEnv, char *logicalName)
+    int DropIO(void *theEnv, char *logicalName)
+    int cDropIO(void *theEnv, char *logicalName)
