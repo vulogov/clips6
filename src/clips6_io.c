@@ -1,5 +1,7 @@
 #include "clips.h"
 #include "clips6_io.h"
 
-int RegisterCLIPS6IO(char *logicalName) {
+int  _RegisterIO(char *logicalName) {
+    printf ("Registering %s\n", logicalName);
+    return 1;
 }

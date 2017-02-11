@@ -1,9 +1,10 @@
 cmake_minimum_required( VERSION 2.8.5 )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ../cmake )
 SET(CMAKE_C_FLAGS "-I../clipssrc/src -I. -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 SET(CMAKE_MODULE_LINKER_FLAGS "-L../clipssrc/src -L/usr/local/lib -lclips")
 SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../include -I.")
 execute_process ( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-USE( UseCython )
+include( UseCython )
 
 set_source_files_properties(
   ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/src/clips6.pyx

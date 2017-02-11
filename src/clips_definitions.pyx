@@ -60,6 +60,8 @@ _MEA_STRATEGY=MEA_STRATEGY
 _COMPLEXITY_STRATEGY=COMPLEXITY_STRATEGY
 _SIMPLICITY_STRATEGY=SIMPLICITY_STRATEGY
 _RANDOM_STRATEGY=RANDOM_STRATEGY
+TRUE=1
+FALSE=0
 
 
 class EvalError(RuntimeError):
@@ -127,3 +129,4 @@ cdef extern from "clips.h":
     long  MemUsed(void* env)
 
 cdef extern from "clips6_io.h":
+    int RegisterIO(char *logicalName)
