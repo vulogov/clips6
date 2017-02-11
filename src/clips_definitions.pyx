@@ -47,7 +47,7 @@ cdef class VOID_PTR:
     cdef void* get(self):
         return self.data
     def __repr__(self):
-        return "<CLP:VOID *0x%x>"%<int>self.data
+        return "<CLP:VOID *0x%x>"%<unsigned long>self.data
 
 ##
 ## STRATEGY modes
@@ -128,5 +128,3 @@ cdef extern from "clips.h":
     int   Unwatch(void* env, char* item)
     long  MemUsed(void* env)
 
-cdef extern from "clips6_io.h":
-    int RegisterIO(char *logicalName)

@@ -21,7 +21,7 @@ cdef class MODULE(BASEENV):
             return "CLIPSMODULE(UNKNOWN)"
     def Print(self):
         if self.ready == True:
-            pp_out = EnvGetDefmodulePPForm(<void*>self.env, <void*>self.module)
+            pp_out = <char*>EnvGetDefmodulePPForm(<void*>self.env, <void*>self.module)
             if pp_out != NULL:
                 return pp_out
             else:

@@ -90,7 +90,7 @@ cdef public int  GetcCLP6IO(void *theEnv,const char *logicalName):
         return ret
     except:
         return -1
-    return (TRUE)
+
 
 cdef public int  UngetcCLP6IO(void *theEnv,int param, const char *logicalName):
     global ROUTERS
