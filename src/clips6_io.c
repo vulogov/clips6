@@ -1,7 +1,12 @@
 #include "clips.h"
 #include "clips6_io.h"
 
-int  _RegisterIO(char *logicalName) {
+int  cRegisterIO(void* theEnv, char *logicalName) {
     printf ("Registering %s\n", logicalName);
-    return 1;
+    return EnvAddRouter(theEnv, logicalName,0,
+            FindCLP6IO,
+            PrintCLP6IO,
+            GetcCLP6IO,
+            UngetcCLP6IO,
+            ExitCLP6IO);
 }

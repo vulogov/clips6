@@ -128,3 +128,6 @@ cdef extern from "clips.h":
     int   Unwatch(void* env, char* item)
     long  MemUsed(void* env)
 
+cdef extern from "clips6_io.h":
+    int RegisterIO(void *theEnv, char *logicalName)
+    int cRegisterIO(void *theEnv, char *logicalName)

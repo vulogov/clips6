@@ -46,18 +46,18 @@ atexit.register(clips6_bufrouters_unload)
 
 cdef extern int _RegisterIO(char *logicalName)
 
-def  RegisterIO(logicalName):
+cdef  int RegisterIO(void* theEnv, char *logicalName):
     global ROUTERS
 
     ## First, regitster IO buffer in ROUTERS
     if ROUTERS.register(logicalName) == True:
         ## Then let the CLIPS know that the buffer exists
-        if _RegisterIO(logicalName) == 1:
+        if cRegisterIO(<void*>theEnv, logicalName) == 1:
             return 1
     return 0
 
 
-cdef public int  FindCLP6IO(void *theEnv, char *logicalName):
+cdef public int  FindCLP6IO(void *theEnv, const char *logicalName):
     global ROUTERS
 
     if ROUTERS.routers.has_key(logicalName) == True:
