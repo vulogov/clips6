@@ -5,6 +5,7 @@ cdef public clips6_load_module(void* env, char *module):
     if check_file_read(module) == True:
         fp = open(module)
         mod = imp.load_module(m_name, fp, module, ('.so', 'rb', 3))
+        init_res = clips6_function_int(env, module, "init_clips6_%s"%m_name)
         try:
             _mod = mod.CLIPS6_MODULE
         except:

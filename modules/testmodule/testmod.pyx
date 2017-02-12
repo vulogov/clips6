@@ -61,12 +61,14 @@ cdef public object print_params(void* env):
     return <object>None
 
 
-cdef public int init_clips_testmod(void* env):
+cdef public int init_clips6_testmod(void* env):
     cdef void* current_env
 
+    print "init_clips6_testmod(...)"
+
     if env == NULL:
-        return 1
+        return 0
     current_env = env
 
-    return 0
+    return 1
 

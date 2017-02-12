@@ -1,5 +1,6 @@
 ## Work with functions
 cdef extern char* clips6_dl(void* env, char *dl_name, char *symname, char *fun_name, char *params, char *retval)
+cdef extern int clips6_function_int(void *env, char *dl_name, char *symname)
 
 
 
