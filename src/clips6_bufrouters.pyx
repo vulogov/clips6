@@ -36,13 +36,17 @@ class ROUTERCTL:
         for e in self.envs.keys():
             if name in self.envs[e]:
                 self.envs[e].remove(name)
-                e.DropIO(name)
-        del self.routers[name]
+        try:
+            del self.routers[name]
+        except:
+            pass
         return True
     def router(self, name):
         if name in self.routers.keys():
             return self.routers[name]
         return None
+    def isRouter(self,name):
+        return self.routers.has_key(name)
 
 ROUTERS = ROUTERCTL()
 
@@ -56,14 +60,13 @@ cdef public void clips6_bufrouters_unload():
 
 atexit.register(clips6_bufrouters_unload)
 
-cdef extern int _RegisterIO(char *logicalName)
 
 def envRegisterIO(env, logicalName):
     global ROUTERS
 
     ROUTERS.envRegister(env, logicalName)
 
-cdef  int RegisterIO(void* theEnv, char *logicalName):
+cdef int RegisterIO(void* theEnv, char *logicalName):
     global ROUTERS
 
     ## First, regitster IO buffer in ROUTERS
@@ -73,13 +76,14 @@ cdef  int RegisterIO(void* theEnv, char *logicalName):
             return (TRUE)
     return (FALSE)
 
-cdef  int DropIO(void* theEnv, char *logicalName):
+cdef int DropIO(void* theEnv, char *logicalName):
     global ROUTERS
 
     if ROUTERS.routers.has_key(logicalName) == True:
+        ROUTERS.remove(logicalName)
         if cDropIO(<void*>theEnv, logicalName) == 1:
             return (TRUE)
-        return (FALSE)
+    return (FALSE)
 
 
 cdef public int  FindCLP6IO(void *theEnv, const char *logicalName):

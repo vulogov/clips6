@@ -4,7 +4,6 @@
 int  cRegisterIO(void* theEnv, char *logicalName) {
 
     cDropIO(theEnv, logicalName);
-    printf ("%s dropped\n", logicalName);
     return EnvAddRouter(theEnv, logicalName,0,
             FindCLP6IO,
             PrintCLP6IO,
@@ -15,10 +14,10 @@ int  cRegisterIO(void* theEnv, char *logicalName) {
 
 int cDropIO(void *theEnv, char *logicalName) {
     if (EnvDeactivateRouter(theEnv, logicalName) != 0) {
-        printf("1\n");
+        /* printf("D BOO1\n"); */
         return EnvDeleteRouter(theEnv, logicalName);
     } else {
-        printf("2 %s\n", logicalName);
+        /* printf("D BOO2\n"); */
         return 0;
     }
 }

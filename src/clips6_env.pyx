@@ -24,12 +24,16 @@ cdef class ENV(BASEENV):
 			self.ready = True
 			ENVIRONMENTS.append(self)
 	def RouterIO(self, logicalName):
+		DropIO(self.env, logicalName)
 		res = RegisterIO(self.env, logicalName)
-		if res != 0:
+		if res == 1:
 			envRegisterIO(self, logicalName)
-		return res
+			return True
+		return False
 	def DropIO(self, logicalName):
-		return DropIO(self.env, logicalName)
+		if DropIO(self.env, logicalName) == 1:
+			return True
+		return False
 	def DLmodule(self, module):
 		return clips6_load_module(self.env, module)
 	def SHELL(self):

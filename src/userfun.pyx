@@ -12,11 +12,12 @@ cdef public void clips6_unload():
 atexit.register(clips6_unload)
 
 cdef public void EnvUserFunctions(void *env):
-    print "EnvUserFunction()"
+    #print "EnvUserFunction()"
+    return
 
 
 
 cdef public void UserFunctions(void *env):
-    print "UserFunction()"
+    #print "UserFunction()"
     return
 
