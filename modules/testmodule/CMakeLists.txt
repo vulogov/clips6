@@ -4,6 +4,7 @@ SET( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ../../include )
 SET(CMAKE_C_FLAGS "-I../../clipssrc/src -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 SET(CMAKE_MODULE_LINKER_FLAGS "-lclips")
 SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../../include")
+SET(CMAKE_MODULE_LINKER_FLAGS "-L../../clipssrc/lib -L../clipssrc/lib -L/usr/local/lib -lclips")
 
 include( UseCython )
 include( clips6 )
