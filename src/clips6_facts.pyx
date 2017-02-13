@@ -9,10 +9,9 @@ cdef class FACT(BASEENV):
         BASEENV.Create(self, <void*>env)
         self.fact = fact
         if self.env != NULL and self.fact != NULL:
-            #if self.isReady() != True:
-            #    raise FactError, "FACT() is not ready"
             EnvIncrementFactCount(self.env, self.fact)
         else:
+            self.ready = False
             raise FactError, "FACT() not reaady in create()"
     def Print(self):
         cdef char buf[4096];
