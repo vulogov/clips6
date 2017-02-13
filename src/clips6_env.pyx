@@ -20,9 +20,21 @@ cdef class ENV(BASEENV):
 		BASEENV.Cinit(self)
 		self.env = <void*>CreateEnvironment()
 		if self.env != NULL:
-			# InitializeDefaultRouters(self.env)
 			self.ready = True
 			ENVIRONMENTS.append(self)
+	def currentModule(self):
+		m = MODULE()
+		m.create( < void * > self.env, <void *>EnvGetCurrentModule( <void *>self.env))
+		return m
+
+	def __getitem__(self, key):
+		_m = <void *>EnvFindDefmodule( < void * > self.env, key)
+		if _m == NULL:
+			raise KeyError, key
+		else:
+			m = MODULE()
+			m.create( <void *> self.env, <void *>_m)
+			return m
 	def RouterIO(self, logicalName):
 		DropIO(self.env, logicalName)
 		res = RegisterIO(self.env, logicalName)

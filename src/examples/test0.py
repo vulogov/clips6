@@ -29,3 +29,15 @@ print "e.DLmodule(...) outcome:",res
 print "="*30
 s.EXEC('(printout t "EXEC:" (getclock) crlf)')
 s.EVAL('(create$ (getclock))')
+
+m = e.currentModule()
+print "Testing MODULE().currentModule()",m
+print "Testing MODULE().Print()",m.Print()
+print "Testing MODULE().currentModule()",m.currentModule()
+print "Testing ENV()['MAIN']",e['MAIN']
+print "Testing ENV()['MODULENOTEXISTS']",
+try:
+    e['MODULENOTEXISTS']
+    print "FAIL"
+except KeyError:
+    print "OK"
