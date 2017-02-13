@@ -25,3 +25,13 @@
 ### What shall I do next ?
 
 1. Read [Installation instructions](INSTALL.md)
+2. Follow [clips6 in 60 seconds](60.md)
+
+### Do you provide any support ?
+
+Yes and no. I am developing and will continue to develop this instrument as the part of my other opensource project. But, clips6 is not my primary source of the income. It is released with the hope of being useful and to help humankind to progress. You can always [follow this link](https://github.com/vulogov/clips6/issues) and submit the ticket if you catch any bug. Because they are there.
+
+### LICENSE
+
+[Read the License Agreement](https://raw.githubusercontent.com/vulogov/clips6/master/LICENSE). Sometimes you must !
+
