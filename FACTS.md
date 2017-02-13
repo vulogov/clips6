@@ -1,5 +1,4 @@
 # How To Work With the FACTS
----
 
 Facts are the cornerstone of any expert system. They are representing the _"knowledge"_, based on which, you shall be able to make a decisions. In order to build successful Rule-Based Expert System, you shall know how to work with facts.
 
@@ -63,3 +62,31 @@ But if you do load the proper **deftemplates**, everything will be allright.
 >>> print fact1
 f-1     (example (v) (w 9) (x 3) (y red) (z 1.5 b) (answer) (abc 11))
 ```
+
+### How to get the list of the FACT's
+
+You've asserted a bunch of facts. Maybe your Rules were also responcible for some of those, now you do need to have an access to the list of the FACT's known to CLIPS.
+
+There is a method *.FACTS()* of the *facts* object. This method returned the list of the instances of type *FACT()*
+
+```python
+import clips6
+
+env = clips6.ENV()
+env.LOAD('clips/test1.clp')
+facts = env.FACTS()
+facts.ASSERT('(example (x 3) (y red) (z 1.5 b))')
+for fact in facts.FACTS():
+    print fact
+```
+
+The output of this code shall lokks like this:
+
+```python
+f-0     (initial-fact)
+f-1     (example (v) (w 9) (x 3) (y red) (z 1.5 b) (answer) (abc 11))
+```
+
+Please note, the *(initial-fact)* is created by the CLIPS during initialization. Please refer to the CLIPS documentation for more details.
+
+### How to work with FACT slots, or reading data from the FACT.
