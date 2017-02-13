@@ -92,8 +92,8 @@ cdef extern from "clips.h":
     int   DestroyEnvironment(void* theEnv)
     void  EnvClear(void* env)
     void  EnvReset(void* env)
-    int   Load(void* env, char* name)
-    int   Build(void* env, char* constructString)
+    int   EnvLoad(void* env, char* name)
+    int   EnvBuild(void* env, char* constructString)
     long int EnvRun(void* env, long runLimit)
     int   EnvSetStrategy(void* env, int value)
     int   EnvGetStrategy(void* env)
@@ -104,30 +104,30 @@ cdef extern from "clips.h":
     char *EnvGetDefmoduleName(void* env, void* defmodulePtr)
     char *EnvGetDefmodulePPForm(void* env, void* defmodulePtr)
     ## Work with Facts
-    void *AssertString(void* env, char* fact)
-    void * AssertString(void * env, char * fact)
-    int  LoadFactsFromString(void* env, char* nputString,int maximumPosition)
-    void PPFact(void* factPtr,char* logicalName,int ignoreDefaultFlag)
-    void  GetFactPPForm(void* env, char* buffer,int bufferLength,void* factPtr)
-    void IncrementFactCount(void* env, void* fact)
-    void DecrementFactCount(void* env, void* fact)
-    long  FactExistp(void* env, void* factPtr);
-    void *GetNextFact(void* env, void* factPtr);
-    int  Retract(void* env, void* factPtr)
-    int GetFactListChanged(void* env)
-    void SetFactListChanged(void* env, int changedFlag)
-    void FactSlotNames(void* env, void* factPtr, DATA_OBJECT* theValue)
-    int GetFactSlot(void* env, void* factPtr, char* slotName, DATA_OBJECT* theValue)
+    void *EnvAssertString(void* env, char* fact)
+    void * EnvAssertString(void * env, char * fact)
+    int  EnvLoadFactsFromString(void* env, char* nputString,int maximumPosition)
+    void EnvPPFact(void* factPtr,char* logicalName,int ignoreDefaultFlag)
+    void  EnvGetFactPPForm(void* env, char* buffer,int bufferLength,void* factPtr)
+    void EnvIncrementFactCount(void* env, void* fact)
+    void EnvDecrementFactCount(void* env, void* fact)
+    long  EnvFactExistp(void* env, void* factPtr);
+    void *EnvGetNextFact(void* env, void* factPtr);
+    int  EnvRetract(void* env, void* factPtr)
+    int EnvGetFactListChanged(void* env)
+    void EnvSetFactListChanged(void* env, int changedFlag)
+    void EnvFactSlotNames(void* env, void* factPtr, DATA_OBJECT* theValue)
+    int EnvGetFactSlot(void* env, void* factPtr, char* slotName, DATA_OBJECT* theValue)
     ## Work with evaluations
     int EnvEval(void* env, char* expressionString, DATA_OBJECT* result)
     ## Work with the routers
     void  InitializeDefaultRouters(void *)
-    int   DeactivateRouter(void* env, char *routerName)
-    int   ActivateRouter(void* env, char *routerName)
+    int   EnvDeactivateRouter(void* env, char *routerName)
+    int   EnvActivateRouter(void* env, char *routerName)
     ## Debug functions
-    int   Watch(void* env, char* item)
-    int   Unwatch(void* env, char* item)
-    long  MemUsed(void* env)
+    int   EnvWatch(void* env, char* item)
+    int   EnvUnwatch(void* env, char* item)
+    long  EnvMemUsed(void* env)
 
 cdef extern from "clips6_io.h":
     int RegisterIO(void *theEnv, char *logicalName)

@@ -10,4 +10,7 @@ include "clips6_env.pyx"
 include "clips6_shell.pyx"
 include "clips6_dynlib.pyx"
 include "clips6_bufrouters.pyx"
+include "clips6_facts.pyx"
 include "clips6_module.pyx"
+
+

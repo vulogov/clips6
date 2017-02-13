@@ -54,6 +54,33 @@ cdef class ENV(BASEENV):
 		s = SHELL()
 		s.create(<void*>self.env)
 		return s
+	def IS_CHANGED(self):
+		if EnvGetFactListChanged( <void *>self.env) == 0:
+			return False
+		EnvSetFactListChanged( <void *>self.env, 0)
+		return True
+
+	def CLEAR(self):
+		EnvClear( <void *>self.env)
+	def RESET(self):
+		EnvReset( <void *> self.env)
+	def LOAD(self, name):
+		if name != None and check_file_read(name):
+			if EnvLoad( <void *>self.env, name) == 1:
+				return True
+		return False
+	def BUILD(self, constr):
+		if EnvBuild( <void *> self.env, constr) == 1:
+			return True
+		return False
+
+	def FACTS(self):
+		if self.ready != True:
+			return None
+		f = FACTS()
+		f.create( < void * > self.env)
+		return f
+
 	def stop(self):
 		if self.ready == True:
 			DestroyEnvironment(<void*>self.env)
