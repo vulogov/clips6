@@ -1,0 +1,34 @@
+# How To Work With the FACTS
+---
+
+Facts are the cornerstone of any expert system. They are representing the _"knowledge"_, based on which, you shall be able to make a decisions. In order to build successful Rule-Based Expert System, you shall know how to work with facts.
+
+### How to get an access to the list of Facts ?
+
+```python
+import clips6
+
+env = clips6.ENV()
+facts = env.FACTS()
+```
+Now, the object _facts_ will provide you an access to the CLIPS _Facts_ capabilities.
+
+### How to create (or in another word "assert") "The Fact"
+
+Let's assume, that we do have a category of the facts called **'example'**  and this fact do have three slots. Fact slot is a representation of the part of the data from the fact. So, our **'example'** fact will have slots *'x'*, *'y'* and unnamed slot. In order to assert fact from the string, you do need t be aware of the CLIPS format for the knowledge representation. The this format is looks like:
+
+```
+(category-name (slot-name data) (slot-name data) ... data )
+```
+
+So, let's take a look at the example:
+
+```python
+import clips6
+
+env = clips6.ENV()
+facts = env.FACTS()
+fact1 = facts.ASSERT('(example (x 3) (y red) (z 1.5 b))')
+```
+
+Facts object asserting the fact from it's string representation by calling method _.ASSERT()_ which returns the reference on the single fact.
