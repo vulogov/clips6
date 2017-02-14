@@ -1,3 +1,5 @@
+from cpython.cobject cimport PyCObject_FromVoidPtr
+
 ## Work with functions
 cdef extern char* clips6_dl(void* env, char *dl_name, char *symname, char *fun_name, char *params, char *retval)
 cdef extern int clips6_function_int(void *env, char *dl_name, char *symname)
@@ -47,6 +49,10 @@ cdef class VOID_PTR:
         self.data = ptr
     cdef void* get(self):
         return self.data
+    def object(self):
+        if self.data == NULL:
+            raise ShellError, "Can not convert NULL pointer to a Python object"
+        return PyCObject_FromVoidPtr(self.data, NULL)
     def __repr__(self):
         return "<CLP:VOID *0x%x>"%<unsigned long>self.data
 

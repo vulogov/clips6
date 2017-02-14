@@ -17,15 +17,15 @@ cdef class SHELL(BASEENV):
         cdef DATA_OBJECT res
 
         if self.isReady() != True:
-            raise EvalError,"SHExxLL() is not ready"
+            raise EvalError,"SHELL() is not ready"
 
         try:
             if EnvEval(<void*>self.env, cmd, &res) == 1:
                 _res = clp2py(res)
-                print "EVAL(%s):"%cmd,repr(_res)
+                #print "EVAL(%s):"%cmd,repr(_res)
             else:
                 _res = None
-        except KeyboardInterrupt:
+        except:
             raise EvalError,"Error in: %s"%cmd
         return _res
     def RUN(self, limit=-1):

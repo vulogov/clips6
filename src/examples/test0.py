@@ -11,7 +11,7 @@ print "EVAL: (integer 42):",s.EVAL("(integer 42)")
 print "EVAL: 'This is a test':",s.EVAL('"This is a test"')
 print 'EVAL: (create$ 3.14 42 "Boo"):',s.EVAL('(create$ 3.14 42 "Boo")')
 print 'EVAL: (+ 2 2):',s.EVAL('(+ 2 2)')
-print "EXEC():",s.EXEC('(printout t "Before the exception!" crlf )')
+#print "EXEC():",s.EXEC('(printout t "Before the exception!" crlf )')
 #print 'Bad expression EVAL: (2 2):',
 #try:
 #    s.EVAL('( 2 2)')
@@ -29,6 +29,16 @@ print "e.DLmodule(...) outcome:",res
 print "="*30
 s.EXEC('(printout t "EXEC:" (getclock) crlf)')
 s.EVAL('(create$ (getclock))')
+print "EVAL('(print_params ...)')"
+res = s.EVAL('(print_params 42 3.14 hello "world" (create$ the list))')
+print "The result is ",res
+print "EVAL('(makeA)')"
+res = s.EVAL('(makeA)')
+print "As VOID:",res
+a = res.object()
+print "As Object",a
+print dir(a)
+
 
 m = e.currentModule()
 print "Testing MODULE().currentModule()",m

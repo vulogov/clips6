@@ -6,7 +6,7 @@ CLIPS6_MODULE={
     "makeA": ["make_class", "", "a"],
     "call_a": ["call_a", "a", "a"],
     "call_b":["call_b", "a", "a"],
-    "print_params": ["print_params", "sidm", "a"]
+    "print_params": ["print_params", "sidm", "i"]
 }
 
 class A:
@@ -55,11 +55,11 @@ cdef public object call_b(void* env):
     a.a()
     return a
 
-cdef public object print_params(void* env):
-    for i in range(1,5):
-        print repr(clp.getArgument(env, "print_params", i))
-    return <object>None
-
+cdef public int print_params(void* env):
+    print "*"*20
+    for i in range(1,6):
+        print i,repr(clp.getArgument(env, "print_params", i))
+    return 42
 
 cdef public int init_clips6_testmod(void* env):
     cdef void* current_env
