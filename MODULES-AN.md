@@ -29,11 +29,13 @@ At this time, we do support the following data types:
 *Example:*
 
 ```python
-{"myFunction":["myfunction","s","i"]}
+CLIPS6_MODULE={"myFunction":["myfunction","s","i"]}
 ```
 If this example, the function _myfunction_ which defined in this module, will be registered with CLIPS with name _myFunction_. It will be accepting _String_ parameter and return an _Integer_.
 
 
 ### Initialization of the module
+
+Function *int init_clips6_<module name>(void* env)* declared inside the module will be called upon initialization
 
 Go [back](MODULES.md) to the modules documentation.
