@@ -1,7 +1,7 @@
 # What is clips6 extension module looks like
 
 ### Anatomy of the function
-Since the CLIPS impose very specific requirements on what's the extention function shall looks like, the functions which wiol be exposed from the module, must be a defined like this:
+Since the CLIPS impose very specific requirements on what's the extention function shall looks like, the functions which will be exposed from the module, must be a defined like this:
 
 ```python
 cdef public <return type> <function name>(void* env)
