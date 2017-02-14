@@ -71,7 +71,6 @@ There is a method *.FACTS()* of the *facts* object. This method returned the lis
 
 ```python
 import clips6
-
 env = clips6.ENV()
 env.LOAD('clips/test1.clp')
 facts = env.FACTS()
@@ -91,4 +90,79 @@ Please note, the *(initial-fact)* is created by the CLIPS during initialization.
 
 ### How to work with FACT slots, or reading data from the FACT.
 
-The fact would be completely useless for us, unless we can access it's content.
+The fact would be completely useless for us, unless we can access it's content. **clips6** provides you the API similar to the Python dictionary.
+
+Here is how you can access the list of the fact slots:
+
+```python
+import clips6
+env = clips6.ENV()
+env.LOAD('clips/test1.clp')
+facts = env.FACTS()
+fact1 = facts.ASSERT('(example (x 3) (y red) (z 1.5 b))')
+print fact1.KEYS()
+```
+
+The output of this code snippet will be 
+
+```python
+['v', 'w', 'x', 'y', 'z', 'answer', 'abc']
+```
+
+Which is matched to the slots that we are set during assertion
+
+```python
+(example (x 3) (y red) (z 1.5 b))
+```
+
+And the list of the slots defined in *deftemplate example*
+
+```python
+(deftemplate example
+    (multislot v)
+    (slot w (default 9))
+    (slot x)
+    (slot y)
+    (multislot z)
+    (multislot answer)
+    (slot abc (default 11))
+)
+```
+
+Which are: "v", "w", "x", "y", "z", "ansewer", "abc"
+
+Next, let me show you how to access the slot value:
+
+```python
+value = fact1["x"]
+print value
+```
+
+The output will be very predictable and equal to _3_
+
+### What about IMPLIED Fact's ?
+
+clips6 support that too. First, let's assert implied fact:
+
+```python
+import clips6
+env = clips6.ENV()
+env.LOAD('clips/test1.clp')
+facts = env.FACTS()
+fact1 = facts.ASSERT('(hello world)')
+print "Is the fact1 Implied ?",fact1.IS_IMPLIED()
+```
+
+We just assert the fact of _implied_ deftemplate "hello", please note, we don't have to define that template. Also, please note, there is no slots in implied facts. The output of this snippet is predictably **Is the fact1 Implied ? True**
+
+Now, let's look, how we can access _implied_ fact data:
+
+```python
+print fact1.IMPLIED()
+```
+
+The output, as we expected, will be 
+
+```python
+['world']
+```
