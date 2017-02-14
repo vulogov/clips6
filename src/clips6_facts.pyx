@@ -67,18 +67,24 @@ cdef class FACT(BASEENV):
             return clp2py(data)
         raise ValueError,key
 
+    def IS_IMPLIED(self):
+        if cIsImplied(<void*>self.fact) == 1:
+            return True
+        return False
+
     def IMPLIED(self):
         cdef DATA_OBJECT data
 
         if self.isReady() != True:
             raise FactError, "FACT() is not ready"
 
+        if self.IS_IMPLIED() == False:
+            return None
+
         if EnvGetFactSlot(<void*>self.env, <void*>self.fact, NULL, &data) == 1:
             return clp2py(data)
         return None
-    def __dealloc__(self):
-        if self.isReady() == True:
-            EnvDecrementFactCount(self.env, self.fact)
+
 
 
 cdef class FACTS(BASEENV):
@@ -128,3 +134,6 @@ cdef class FACTS(BASEENV):
             return False
         facts = '\n'.join(self.transactions[trid])
         return self.ASSERTS(facts)
+    def stop(self):
+        for f in self.FACTS():
+            f.RETRACT()

@@ -11,7 +11,7 @@ set_source_files_properties(
   PROPERTIES CYTHON_IS_CXX FALSE )
 
 # Multi-file cython modules do not appear to be working at the moment.
-cython_add_module( clips6 clips6.pyx clips6_dl.c clips6_io.c )
+cython_add_module( clips6 clips6.pyx clips6_dl.c clips6_io.c clips6_f.c )
 
 install(FILES clips6.so ${CMAKE_CURRENT_SOURCE_DIR}/clips6.so DESTINATION ${PYTHON_SITE_PACKAGES} )
 

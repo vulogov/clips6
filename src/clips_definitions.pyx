@@ -71,6 +71,8 @@ class ShellError(RuntimeError):
     pass
 class FactError(RuntimeError):
     pass
+class EnvError(RuntimeError):
+    pass
 
 
 cdef extern from "commline.h":
@@ -134,3 +136,6 @@ cdef extern from "clips6_io.h":
     int cRegisterIO(void *theEnv, char *logicalName)
     int DropIO(void *theEnv, char *logicalName)
     int cDropIO(void *theEnv, char *logicalName)
+
+cdef extern from "clips6_f.h":
+    int  cIsImplied(void* fact)

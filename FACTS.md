@@ -90,3 +90,5 @@ f-1     (example (v) (w 9) (x 3) (y red) (z 1.5 b) (answer) (abc 11))
 Please note, the *(initial-fact)* is created by the CLIPS during initialization. Please refer to the CLIPS documentation for more details.
 
 ### How to work with FACT slots, or reading data from the FACT.
+
+The fact would be completely useless for us, unless we can access it's content.
