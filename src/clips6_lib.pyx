@@ -4,7 +4,7 @@
 import os
 
 def rchop(thestring, ending):
-    """Chopping string ending:
+    """Chopping a string ending:
 
     1. thestring: source string
     2. ending: the tail which shall be removed"""
@@ -13,6 +13,12 @@ def rchop(thestring, ending):
     return thestring
 
 def check_file(fname, mode):
+    """
+    Check if file exists and we can access it.
+    :param fname: Filename
+    :param mode: Access mode
+    :return: True/False
+    """
     fname = os.path.expandvars(fname)
     if os.path.exists(fname) and os.path.isfile(fname) and os.access(fname, mode):
         return True

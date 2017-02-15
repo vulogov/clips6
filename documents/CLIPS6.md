@@ -20,6 +20,11 @@
 
 ##### `check_file(...)` 
 
+> Check if file exists and we can access it.
+> :param fname: Filename
+> :param mode: Access mode
+> :return: True/False
+
 
 
 ##### `check_file_exec(...)` 
@@ -48,7 +53,7 @@
 
 ##### `rchop(...)` 
 
-> Chopping string ending:
+> Chopping a string ending:
 > 
 >     1. thestring: source string
 >     2. ending: the tail which shall be removed
