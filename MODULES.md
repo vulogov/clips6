@@ -21,4 +21,8 @@ clips6 uses "mixed" approach. While permitting you to create functions using Pyt
 
 1. [Architecture](MODULES-ARCH.md) of the clips6 loadable modules;
 2. [Anathomy](MODULES-AN.md) of the clips6 loadable module;
-3. [Build environment](MODULES-CMAKE.md) for the clips6 loadable module.
+3. [Build environment](MODULES-CMAKE.md) for the clips6 loadable module;
+4. [Test module](modules/testmodule) for the demonstration of the basic principles of the clips6 extension modules;
+5. [Dummy module](modules/dummy) for the demonstration of the basic principles of the clips6 extension module build environment.
+
+
