@@ -159,3 +159,5 @@ modules/dummy/dummy.c
 modules/dummy/dummy.h
 
 modules/dummy/dummy.o
+
+src/clips6.html
