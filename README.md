@@ -28,7 +28,7 @@
 2. Follow [clips6 in 60 seconds](60.md)
 3. Read on [how to work with FACTS](FACTS.md)
 4. Study how to [extend](MODULES.md) CLIPS engine with Python code.
-5. Check the [clips6 module documentation](documents)
+5. Check the [clips6 module documentation](documents/README.md)
 
 ### Do you provide any support ?
 
