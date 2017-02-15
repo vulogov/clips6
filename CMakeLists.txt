@@ -38,4 +38,11 @@ add_subdirectory( src )
 add_subdirectory( modules/testmodule )
 add_subdirectory( bin )
 
+FILE(GLOB CLIPS6_CMAKE_ALL "cmake/*")
+FILE(GLOB CLIPS6_CYTHONINCLUDE_ALL "include/*")
+install(FILES ${CLIPS6_CMAKE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/cmake )
+install(FILES ${CLIPS6_CYTHONINCLUDE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/include )
+
+
+
 

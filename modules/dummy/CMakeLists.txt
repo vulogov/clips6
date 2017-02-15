@@ -1,20 +1,3 @@
-# How to build the module
-
-First, please take a look at the [sample module](modules/dummy) which does not depend on the clips6 source code
-
-When you build and install clips6 module, there are certain files, necessary for the extention module build, will be installed in _/usr/local/lib/clips6/build_. Exact locatin of this root could be changed by editing [this](cmake/clips6.cmake) file.
-
-So, when you are ready to develop your own clips6 module, you have to create _CMakeLists.txt_. You can look at [this](modules/dummy/CMakeLists.txt) file as your reference. So, your steps will be as follows:
-
-1. Create your source code in a single (or multiple) _*.pyx_ files. If you are using multiple files, please make sure that they are part of your module build.
-2. Create _CMakeLists.txt_
-3. Run _cmake ._
-4. If step #3 returns no errors, run _make_
-5. If step #4 returns no errors, run _make install_
-
-Now, let's look at the commented version of the _CMakeLists.txt
-
-```cmake
 ##
 ## Version requirement restriction for the CMake
 ##
@@ -78,6 +61,6 @@ CYTHON_ADD_MODULE( dummy dummy.pyx )
 ##
 INSTALL(FILES dummy.so dummy.so DESTINATION ${CLIPS6_MODULE_PATH} )
 
-```
 
-Go [back](MODULES.md) to the modules documentation.
+
+

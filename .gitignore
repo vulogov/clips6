@@ -151,3 +151,5 @@ bin/CTestTestfile.cmake
 clipssrc/CTestTestfile.cmake
 
 CTestTestfile.cmake
+
+modules/dummy/CMakeFiles/*
