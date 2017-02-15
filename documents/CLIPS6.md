@@ -12,9 +12,19 @@
 
 ##### `check_directory(...)` 
 
+> Check if parameter is directory and we do have READ access to it
+> 
+> 1. :param dname: Directory name
+> 2. :return: True/False
+
 
 
 ##### `check_directory_write(...)` 
+
+> Check if parameter is directory and we do have WRITE access to it
+> 
+> 1. :param dname: Directory name
+> 2. :return: True/False
 
 
 
@@ -30,17 +40,37 @@
 
 ##### `check_file_exec(...)` 
 
+> Check if parameter is a file and we do have EXEC access to it
+> 
+> 1. :param fname: Filename
+> 2. :return: True/False
+
 
 
 ##### `check_file_read(...)` 
+
+> Check if parameter is a file and we do have READ access to it
+> 
+> 1. :param fname: Filename
+> 2. :return: True/False
 
 
 
 ##### `check_file_write(...)` 
 
+> Check if parameter is a file and we do have WRITE access to it
+> 
+> 1. :param fname: Filename
+> 2. :return: True/False
+
 
 
 ##### `check_module(...)` 
+
+> Check if parameter is a file, we do have READ access to it and it's size is greater than '0'
+> 
+> 1. :param fname: Filename
+> 2. :return: True/False
 
 
 
@@ -49,6 +79,11 @@
 
 
 ##### `get_dir_content(...)` 
+
+> Returning the list with directory content to which we do have READ access to
+> 
+> 1. :param dname: Directory name
+> 2. :return: List
 
 
 
@@ -62,6 +97,14 @@
 
 
 ##### `repeat(...)` 
+
+> Repeat function X until it returned True, otherwise number of times, with logging
+> 
+> 1. :param fun: Function
+> 2. :param log_fun: Logging function
+> 3. :param max_attempts: Maximum number of attempts
+> 4. :param msg: Add to a message
+> 5. :return: True/False
 
 
 
