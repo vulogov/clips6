@@ -7,7 +7,6 @@ def rchop(thestring, ending):
     """Chopping string ending:
 
     1. thestring: source string
-
     2. ending: the tail which shall be removed"""
     if thestring.endswith(ending):
         return thestring[:-len(ending)]

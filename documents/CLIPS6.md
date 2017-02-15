@@ -51,7 +51,6 @@
 > Chopping string ending:
 > 
 >     1. thestring: source string
-> 
 >     2. ending: the tail which shall be removed
 
 
