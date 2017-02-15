@@ -21,6 +21,7 @@
 ##### `check_file(...)` 
 
 > Check if file exists and we can access it.
+> 
 > :param fname: Filename
 > :param mode: Access mode
 > :return: True/False

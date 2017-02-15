@@ -15,6 +15,7 @@ def rchop(thestring, ending):
 def check_file(fname, mode):
     """
     Check if file exists and we can access it.
+
     :param fname: Filename
     :param mode: Access mode
     :return: True/False
