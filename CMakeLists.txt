@@ -1,49 +1,52 @@
 # Defines the CMake commands/policies
-cmake_minimum_required( VERSION 2.8.5 )
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8.5 )
 
 # Set the project name
-project( CLIPS6 )
+PROJECT( CLIPS6 )
 
 # Make the scripts available in the 'cmake' directory available for the
 # 'include()' command, 'find_package()' command.
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake )
-set( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include )
+SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake )
+SET( PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include )
 
 
 # Include the CMake script UseCython.cmake.  This defines add_cython_module().
 # Instruction for use can be found at the top of cmake/UseCython.cmake.
-include( UseCython )
-include( clips6 )
+INCLUDE( UseCython )
+INCLUDE( clips6 )
 
 # With CMake, a clean separation can be made between the source tree and the
 # build tree.  When all source is compiled, as with pure C/C++, the source is
 # no-longer needed in the build tree.  However, with pure *.py source, the
 # source is processed directly.  To handle this, we reproduce the availability
 # of the source files in the build tree.
-add_custom_target( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
+ADD_CUSTOM_TARGET( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ReplicatePythonSourceTree.cmake
   ${CMAKE_CURRENT_BINARY_DIR}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
 ADD_CUSTOM_TARGET( testsuite ALL python test_clips6.py -v WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testsuite )
 
-include_directories( ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/include )
+INCLUDE_DIRECTORIES( ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/include )
 
-enable_testing()
-find_file( NOSETESTS_EXECUTABLE nosetests )
-add_test( nosetests "${NOSETESTS_EXECUTABLE}" -v --with-xunit )
+ENABLE_TESTING()
+FIND_FILE( NOSETESTS_EXECUTABLE nosetests )
+ADD_TEST( nosetests "${NOSETESTS_EXECUTABLE}" -v --with-xunit )
 
 # Process the CMakeLists.txt in the 'src' and 'bin' directory.
 
-add_subdirectory( clipssrc )
-add_subdirectory( src )
-add_subdirectory( modules/testmodule )
-add_subdirectory( bin )
+ADD_SUBDIRECTORY( clipssrc )
+ADD_SUBDIRECTORY( src )
+ADD_SUBDIRECTORY( modules/testmodule )
+ADD_SUBDIRECTORY( bin )
 
 FILE(GLOB CLIPS6_CMAKE_ALL "cmake/*")
 FILE(GLOB CLIPS6_CYTHONINCLUDE_ALL "include/*")
-install(FILES ${CLIPS6_CMAKE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/cmake )
-install(FILES ${CLIPS6_CYTHONINCLUDE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/include )
+FILE(GLOB CLIPS6_ETC_ALL "etc/clips/*")
+INSTALL(FILES ${CLIPS6_CMAKE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/cmake )
+INSTALL(FILES ${CLIPS6_CYTHONINCLUDE_ALL} DESTINATION ${CLIPS6_BUILDLIBRARY_PATH}/include )
+INSTALL(FILES ${CLIPS6_ETC_ALL} DESTINATION ${CLIPS6_CLIPSETC_PATH} )
+
 
 
 
