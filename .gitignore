@@ -161,3 +161,8 @@ modules/dummy/dummy.h
 modules/dummy/dummy.o
 
 src/clips6.html
+
+src/clips6c
+
+src/clips6_cmd_static.c
+
