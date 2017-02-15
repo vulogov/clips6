@@ -25,6 +25,14 @@ class TestStreams(unittest.TestCase):
         e = clips6.ENV()
         e.RouterIO("test")
         self.assertTrue(e.DropIO("test"))
+    def test_router_write_read(self):
+        import clips6
+        e = clips6.ENV()
+        e.RouterIO("out")
+        s = e.SHELL()
+        s.EXEC('(printout out "Hello World")')
+        r = clips6.ROUTERS.router("out")
+        self.assertEqual(r.Read(), "Hello World")
 
 
 if __name__ == '__main__':

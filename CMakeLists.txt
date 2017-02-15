@@ -25,6 +25,8 @@ add_custom_target( ReplicatePythonSourceTree ALL ${CMAKE_COMMAND} -P
   ${CMAKE_CURRENT_BINARY_DIR}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
+ADD_CUSTOM_TARGET( testsuite ALL python test_clips6.py -v WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testsuite )
+
 include_directories( ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/include )
 
 enable_testing()

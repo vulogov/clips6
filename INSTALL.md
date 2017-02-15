@@ -18,6 +18,6 @@
 6. If Step #3 produce no errors, go ahead and run make as _make_
 7. If make doesn't produced any errors, run _make install_
 8. If everything is error-free on Step #7, you may want to run _ldconfig -v_ in order to make _libclips.so_ known to *LD_SO_CONF*
-9. Run the *Test Suite* as _(cd ./testsuite; python test_clips6.py)_
+9. Run the *Test Suite* as _make testsuite_
 10. If Step #9 returns you *OK*, your new clips6 module is succesfully built and installed. Welcome to the world of *CLIPS* !
 
