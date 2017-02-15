@@ -12,7 +12,7 @@ cdef public int dummy(void* env):
 cdef public int init_clips6_dummy(void* env):
     cdef void* current_env
 
-    print "init_clips6_dummy(...)"
+    #print "init_clips6_dummy(...)"
 
     return 1
 

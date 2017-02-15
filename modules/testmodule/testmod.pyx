@@ -6,7 +6,8 @@ CLIPS6_MODULE={
     "makeA": ["make_class", "", "a"],
     "call_a": ["call_a", "a", "a"],
     "call_b":["call_b", "a", "a"],
-    "print_params": ["print_params", "sidm", "i"]
+    "print_params": ["print_params", "sidm", "i"],
+    "TheAnswer": ["the_answer", "", "i"]
 }
 
 class A:
@@ -14,6 +15,9 @@ class A:
         print "Class A Constructor is called"
     def a(self):
         print "Method a() called",self
+
+cdef public int the_answer(void* env):
+    return 42
 
 cdef public double get_clock(void* env):
     import time
@@ -64,7 +68,8 @@ cdef public int print_params(void* env):
 cdef public int init_clips6_testmod(void* env):
     cdef void* current_env
 
-    print "init_clips6_testmod(...)"
+    #print "init_clips6_testmod(...)"
+    #print "init_clips6_testmod(...)"
 
     if env == NULL:
         return 0

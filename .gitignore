@@ -153,3 +153,9 @@ clipssrc/CTestTestfile.cmake
 CTestTestfile.cmake
 
 modules/dummy/CMakeFiles/*
+
+modules/dummy/dummy.c
+
+modules/dummy/dummy.h
+
+modules/dummy/dummy.o
