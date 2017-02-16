@@ -1,0 +1,3 @@
+##
+## clips6 constants
+##

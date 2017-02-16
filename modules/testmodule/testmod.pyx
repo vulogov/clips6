@@ -1,4 +1,6 @@
+include "clips6library.pyi"
 cimport CLPmod as clp
+
 
 
 CLIPS6_MODULE={
@@ -7,7 +9,8 @@ CLIPS6_MODULE={
     "call_a": ["call_a", "a", "a"],
     "call_b":["call_b", "a", "a"],
     "print_params": ["print_params", "sidm", "i"],
-    "TheAnswer": ["the_answer", "", "i"]
+    "TheAnswer": ["the_answer", "", "i"],
+    "make-env": ["make_env", "", "a"]
 }
 
 class A:
@@ -64,6 +67,11 @@ cdef public int print_params(void* env):
     for i in range(1,6):
         print i,repr(clp.getArgument(env, "print_params", i))
     return 42
+
+cdef public make_env(void* env):
+    e = Environment(env)
+    return e
+
 
 cdef public int init_clips6_testmod(void* env):
     cdef void* current_env

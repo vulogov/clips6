@@ -4,11 +4,15 @@ SET(CMAKE_C_FLAGS "-I../clipssrc/src -I. -DCLIPS_MAJOR=6 -DCLIPS_MINOR=30")
 SET(CMAKE_MODULE_LINKER_FLAGS "-L../clipssrc/lib -L../clipssrc/src -L/usr/local/lib -lclips")
 SET(CMAKE_EXE_LINKER_FLAGS "-L../clipssrc/lib -L../clipssrc/src -L/usr/local/lib -lclips -ldl")
 
-SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../include -I.")
 EXECUTE_PROCESS( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 INCLUDE( UseCython )
 INCLUDE( clips6 )
+
+SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I${CLIPS6_BUILDLIBRARY_PATH}/include")
+SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I../include")
+SET(CYTHON_FLAGS ${CYTHON_FLAGS} "-I.")
+
 
 SET_SOURCE_FILES_PROPERTIES(
   ${CYTHON_CMAKE_EXAMPLE_SOURCE_DIR}/src/clips6.pyx

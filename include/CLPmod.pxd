@@ -1,3 +1,4 @@
+
 cdef extern from "clips.h":
     struct dataObject:
         void* supplimentalInfo
@@ -31,6 +32,8 @@ cdef extern from "clips.h":
     int    GetDOLength(DATA_OBJECT argument)
     int    GetMFType(void* multifieldPtr,int fieldPosition)
     void*  GetMFValue(void* multifieldPtr,int fieldPosition)
+    void *FalseSymbol()
+    void *TrueSymbol()
 
     ## DATATYPES
     cdef int FLOAT
@@ -47,6 +50,7 @@ cdef extern from "clips.h":
     cdef int AT_LEAST
     cdef int NO_MORE_THAN
     cdef int RANGE
+
 
 cdef inline object getPyObjectFromArgs(void* env, char* function, int position):
     cdef object obj
@@ -91,3 +95,4 @@ cdef inline getArgument(void* env, char* function, int position):
         return res
     else:
         return None
+

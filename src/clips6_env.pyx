@@ -27,11 +27,11 @@ cdef class ENV(BASEENV):
         if self.env != NULL:
             self.ready = True
             ENVIRONMENTS.append(self)
-    cdef Derive(self, void* env):
+    def Derive(self, env):
         if self.ready == True:
             if self.env != NULL:
                 self.stop()
-            self.env = env
+            self.env = env.get()
             self.facts = []
             ENVIRONMENTS.append(self)
             self.ready = True

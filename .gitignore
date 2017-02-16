@@ -174,3 +174,9 @@ modules/example/CMakeFiles/*
 modules/example/example.c
 
 modules/example/example.h
+
+modules/require/CMakeFiles/*
+
+modules/require/require.c
+
+modules/require/require.h
