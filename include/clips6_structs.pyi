@@ -8,6 +8,7 @@ cdef  class VOID_PTR:
         if self.data == NULL:
             return False
         return True
+    @staticmethod
     cdef  set(self, void* ptr):
         self.data = ptr
     cdef  void* get(self):
@@ -19,10 +20,10 @@ cdef  class VOID_PTR:
     def __repr__(self):
         return "<CLP:VOID *0x%x>"%<unsigned long>self.data
 
-cdef  Environment(void* env):
-    from clips6 import ENV
-    e_ptr = VOID_PTR()
-    e_ptr.set(env)
-    e = ENV(False)
-    e.Derive(e_ptr)
-    return e
+#cpdef  object Environment(void* env):
+#    from clips6 import ENV
+#    #e_ptr = VOID_PTR()
+#    #e_ptr.set(env)
+#    e = ENV(False)
+#    e.Derive(env)
+#    return e

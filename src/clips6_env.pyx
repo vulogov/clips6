@@ -27,14 +27,14 @@ cdef class ENV(BASEENV):
         if self.env != NULL:
             self.ready = True
             ENVIRONMENTS.append(self)
-    def Derive(self, env):
-        if self.ready == True:
-            if self.env != NULL:
-                self.stop()
-            self.env = env.get()
-            self.facts = []
-            ENVIRONMENTS.append(self)
-            self.ready = True
+    #cpdef Derive(self, void* env):
+    #    if self.ready == True:
+    #        if self.env != NULL:
+    #            self.stop()
+    #        self.env = <void*>env
+    #        self.facts = []
+    #        ENVIRONMENTS.append(self)
+    #        self.ready = True
     def currentModule(self):
         if self.ready != True:
             raise EnvError, "Environment not ready for the currentModule()"
