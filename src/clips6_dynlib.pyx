@@ -1,5 +1,29 @@
 import imp, posixpath
 
+
+cdef public clips6_load_directory(void* env, char *path):
+    m_name = posixpath.basename(path)
+    m_file = "%s/%s.module"%(path, m_name)
+    if check_directory(path) == True and check_file_read(m_file):
+        module = read_file_into_buffer(m_file)
+        for mod in module:
+            try:
+                n, ext = mod.split(".")
+            except:
+                return False
+            f_path = "%s/%s"%(path, mod)
+            if ext == "so":
+                if clips6_load_module(env, f_path) == False:
+                    return False
+            elif ext == "clp":
+                if EnvLoad(env, f_path) != 1:
+                    return False
+            else:
+                continue
+        return True
+    return False
+
+
 cdef public clips6_load_module(void* env, char *module):
     m_name = posixpath.basename(module).split(".")[0]
     if check_file_read(module) == True:

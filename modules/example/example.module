@@ -1,0 +1,4 @@
+## First, we will load example.so
+example.so
+## Then example.clp
+example.clp

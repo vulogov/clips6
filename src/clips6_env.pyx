@@ -16,14 +16,25 @@ cdef class BASEENV:
 
 cdef class ENV(BASEENV):
     cdef object facts
-    def __cinit__(self):
+    def __cinit__(self, c=True):
         global ENVIRONMENTS
         BASEENV.Cinit(self)
-        self.env = <void*>CreateEnvironment()
+        if c == True:
+            self.env = <void*>CreateEnvironment()
+        else:
+            self.env = NULL
         self.facts = []
         if self.env != NULL:
             self.ready = True
             ENVIRONMENTS.append(self)
+    cdef Derive(self, void* env):
+        if self.ready == True:
+            if self.env != NULL:
+                self.stop()
+            self.env = env
+            self.facts = []
+            ENVIRONMENTS.append(self)
+            self.ready = True
     def currentModule(self):
         if self.ready != True:
             raise EnvError, "Environment not ready for the currentModule()"
@@ -59,7 +70,13 @@ cdef class ENV(BASEENV):
     def DLmodule(self, module):
         if self.ready != True:
             raise EnvError, "Environment not ready for the DLmodule()"
-        return clips6_load_module(self.env, module)
+        if check_directory(module) == True:
+            return clips6_load_directory(self.env, module)
+        elif check_file_read(module) == True:
+            return clips6_load_module(self.env, module)
+        else:
+            return False
+
     def SHELL(self):
         if self.ready != True:
             raise EnvError, "Environment not ready for the SHELL()"

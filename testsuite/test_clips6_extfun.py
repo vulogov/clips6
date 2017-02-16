@@ -11,6 +11,12 @@ class TestExtFun(unittest.TestCase):
         e.DLmodule("../modules/testmodule/testmod.so")
         s = e.SHELL()
         self.assertEqual(s.EVAL('(TheAnswer)'), 42)
+    def test_load_dir(self):
+        import clips6
+        e = clips6.ENV()
+        e.DLmodule("../modules/example")
+        s = e.SHELL()
+        self.assertEqual(s.EVAL('(answer)'), 42)
 
 
 if __name__ == '__main__':

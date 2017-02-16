@@ -127,3 +127,13 @@ def repeat(fun, log_fun, max_attempts, msg="Attempt: "):
         if res != False:
             return True
     return False
+
+def read_file_into_buffer(fname):
+    buf = []
+    _buf = open(fname).readlines()
+    for l in _buf:
+        _l = l.strip()
+        if len(_l) == 0 or _l[0] == '#':
+            continue
+        buf.append(_l)
+    return buf

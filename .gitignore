@@ -168,3 +168,9 @@ src/clips6_cmd_static.c
 
 
 src/clips6_cmd_static.h
+
+modules/example/CMakeFiles/*
+
+modules/example/example.c
+
+modules/example/example.h

@@ -30,6 +30,8 @@ INSTALL(FILES clips6c
                 GROUP_EXECUTE GROUP_READ
                 WORLD_EXECUTE WORLD_READ
 )
+ADD_CUSTOM_TARGET(clips6_module DEPENDS ${PYTHON_SITE_PACKAGES}/clips6.so)
+ADD_CUSTOM_TARGET(clips6_cmd DEPENDS clips6c)
 
 
 
