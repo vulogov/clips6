@@ -166,3 +166,5 @@ src/clips6c
 
 src/clips6_cmd_static.c
 
+
+src/clips6_cmd_static.h
