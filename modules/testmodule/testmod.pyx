@@ -68,9 +68,9 @@ cdef public int print_params(void* env):
         print i,repr(clp.getArgument(env, "print_params", i))
     return 42
 
-#cdef public make_env(void* env):
-#    e = Environment(env)
-#    return e
+cdef public make_env(void* env):
+    e = Environment(env)
+    return e
 
 
 cdef public int init_clips6_testmod(void* env):

@@ -1,13 +1,12 @@
 import atexit
 
-ENVIRONMENTS=[]
 
 cdef public void clips6_unload():
-    global ENVIRONMENTS
+    global E
 
-    DeallocateEnvironmentData()
-    for _env in ENVIRONMENTS:
+    for _env in E.environments():
         _env.stop()
+
 
 atexit.register(clips6_unload)
 
