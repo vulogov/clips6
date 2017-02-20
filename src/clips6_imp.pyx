@@ -5,7 +5,11 @@ default_python_modules = {
     "traceback": ["Exploring and printing traceback",True],
     "atexit": ["Execute function at program termination",True],
     "time": ["Functions for manupulating time", True],
-    "msgpack": ["Packing data into a compact structures. Required by the CLIPS module load", True],
+    "msgpack": ["Packing data into a compact structures. Required by the CLIPS6 module load", True],
+    "OpenSSL": ["Support encryption routines. Required by the CLIPS6 module load", True],
+    "tempfile": ["Temporary files geneartion", True],
+    "shutil": ["High-level shell utilities", True],
+    "base64": ["BASE64 encoding/decoding", True],
     "posixpath": ["Manipulations with directory structure",True]
 }
 

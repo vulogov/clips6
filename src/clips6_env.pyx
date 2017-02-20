@@ -9,7 +9,6 @@ class ENVCTL:
         self.max_lock = 3600
         self.envs = {}
         self.env_default_name = None
-        self.loader = MODLDR()
         try:
             if os.environ.has_key("CLIPS6_DEFAULT_ENVIRONMENT") == True and len(os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()) > 0:
                 self.env_default_name = os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()
@@ -81,6 +80,7 @@ cdef class ENV(BASEENV):
     cdef object ctl
     cdef char*  name
     cdef object set_current
+    cdef object loader
     def __cinit__(self, name=str(uuid.uuid4()), **kw):
         global E
         BASEENV.Cinit(self)
@@ -99,6 +99,9 @@ cdef class ENV(BASEENV):
             self.ctl.register(self)
             if self.set_current == True and self.IS_REGISTERED():
                 self.CURRENT()
+            self.loader = MODLDR(self.name)
+        else:
+            self.loader = None
     def IS_REGISTERED(self):
         if self.ready != True:
             raise EnvError, "Environment is not ready for the IS_REGISTERED()"
@@ -207,6 +210,7 @@ cdef class ENV(BASEENV):
             f.stop()
         if self.ready == True:
             DestroyEnvironment(<void*>self.env)
+        self.loader.stop()
 
 def MAKE(name):
     global E
