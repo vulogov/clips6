@@ -180,3 +180,9 @@ modules/require/CMakeFiles/*
 modules/require/require.c
 
 modules/require/require.h
+
+src/clips6_pkg_static.h
+
+src/clips6_pkg_static.c
+
+src/clips6pkg

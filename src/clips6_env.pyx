@@ -9,6 +9,7 @@ class ENVCTL:
         self.max_lock = 3600
         self.envs = {}
         self.env_default_name = None
+        self.loader = MODLDR()
         try:
             if os.environ.has_key("CLIPS6_DEFAULT_ENVIRONMENT") == True and len(os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()) > 0:
                 self.env_default_name = os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()

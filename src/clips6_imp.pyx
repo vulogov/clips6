@@ -5,6 +5,7 @@ default_python_modules = {
     "traceback": ["Exploring and printing traceback",True],
     "atexit": ["Execute function at program termination",True],
     "time": ["Functions for manupulating time", True],
+    "msgpack": ["Packing data into a compact structures. Required by the CLIPS module load", True],
     "posixpath": ["Manipulations with directory structure",True]
 }
 
