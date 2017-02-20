@@ -1,5 +1,6 @@
 import uuid
 import time
+import os
 
 class ENVCTL:
     def __init__(self):
@@ -7,6 +8,14 @@ class ENVCTL:
         self._lock = 0
         self.max_lock = 3600
         self.envs = {}
+        self.env_default_name = None
+        try:
+            if os.environ.has_key("CLIPS6_DEFAULT_ENVIRONMENT") == True and len(os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()) > 0:
+                self.env_default_name = os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()
+        except:
+            pass
+        if self.env_default_name != None:
+            ENV(self.env_default_name, set_current=True, E=self)
     def wait_for_lock(self, w=180):
         s = time.time()
         while True:
@@ -72,7 +81,7 @@ cdef class ENV(BASEENV):
     cdef char*  name
     cdef object set_current
     def __cinit__(self, name=str(uuid.uuid4()), **kw):
-        global ENVIRONMENTS, E
+        global E
         BASEENV.Cinit(self)
         self.env = <void*>CreateEnvironment()
         self.facts = []
@@ -80,10 +89,12 @@ cdef class ENV(BASEENV):
         self.set_current = True
         if kw.has_key("set_current"):
             self.set_current = kw["set_current"]
+        if kw.has_key("E"):
+            self.ctl = kw["E"]
+        else:
+            self.ctl = E
         if self.env != NULL:
             self.ready = True
-            self.ctl = E
-            #ENVIRONMENTS.append(self)
             self.ctl.register(self)
             if self.set_current == True and self.IS_REGISTERED():
                 self.CURRENT()
@@ -195,3 +206,19 @@ cdef class ENV(BASEENV):
             f.stop()
         if self.ready == True:
             DestroyEnvironment(<void*>self.env)
+
+def MAKE(name):
+    global E
+    if E.is_registered(name) == True:
+        e = E[name]
+        e.CURRENT()
+        return e
+    return ENV(name, set_default=True)
+def ADD(name):
+    global E
+    if E.is_registered(name) == True:
+        return E[name]
+    return ENV(name, set_default=True)
+def CURRENT():
+    global E
+    return E.current()

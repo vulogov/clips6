@@ -1,16 +1,15 @@
 cimport CLPmod as clp
-include "clips6_constants.pyi"
 
 
 CLIPS6_MODULE={
-    "require-python": ["require_python", "ss", "w"],
-    "require-python-or-exit": ["require_python_or_exit", "ss", "w"]
+    "require-python": ["require_python", "ss", "b"],
+    "require-python-or-exit": ["require_python_or_exit", "ss", "b"]
 }
 
-cdef public void* require_python(void* env):
-    return (clp.TrueSymbol())
-cdef public void*  require_python_or_exit(void* env):
-    return (clp.TrueSymbol())
+cdef public int require_python(void* env):
+    return clp.TRUE()
+cdef public int  require_python_or_exit(void* env):
+    return clp.TRUE()
 
 
 

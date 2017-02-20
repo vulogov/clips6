@@ -20,7 +20,6 @@ cdef  class VOID_PTR:
      def __repr__(self):
          return "<CLP:VOID *0x%x>"%<unsigned long>self.data
 
-cdef inline Environment(void* env):
-    from clips6 import E
-    print E.default
-    return None
+cdef object Environment():
+    from clips6 import CURRENT
+    return CURRENT()

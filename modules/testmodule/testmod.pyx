@@ -69,7 +69,11 @@ cdef public int print_params(void* env):
     return 42
 
 cdef public make_env(void* env):
-    e = Environment(env)
+    import clips6
+    e = clips6.CURRENT()
+    s = e.SHELL()
+    s.EXEC('(printout t "Hello from (make-env)" crlf)')
+    print e
     return e
 
 

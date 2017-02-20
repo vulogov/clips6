@@ -30,6 +30,7 @@ class ROUTERCTL:
         else:
             if name not in self.envs[env]:
                 self.envs[env].append(name)
+        return True
     def remove(self, name):
         if name not in self.routers.keys():
             return False
@@ -61,10 +62,32 @@ cdef public void clips6_bufrouters_unload():
 atexit.register(clips6_bufrouters_unload)
 
 
+def OPEN(logicalName, envName=None):
+    global ROUTERS, E
+
+    if envName == None:
+        try:
+            e = CURRENT()
+        except KeyboardInterrupt:
+            return False
+    else:
+        try:
+            e = E[envName]
+        except KeyboardInterrupt:
+            return False
+    if ROUTERS.register(logicalName) == True and envRegisterIO(e, logicalName) == True:
+        return ROUTERS.router(logicalName)
+    return False
+
+def CLOSE(logicalName):
+    global ROUTERS
+
+    return ROUTERS.remove(logicalName)
+
 def envRegisterIO(env, logicalName):
     global ROUTERS
 
-    ROUTERS.envRegister(env, logicalName)
+    return ROUTERS.envRegister(env, logicalName)
 
 cdef int RegisterIO(void* theEnv, char *logicalName):
     global ROUTERS

@@ -32,8 +32,8 @@ cdef extern from "clips.h":
     int    GetDOLength(DATA_OBJECT argument)
     int    GetMFType(void* multifieldPtr,int fieldPosition)
     void*  GetMFValue(void* multifieldPtr,int fieldPosition)
-    void *FalseSymbol()
-    void *TrueSymbol()
+    void*  EnvFalseSymbol(void* env)
+    void*  EnvTrueSymbol(void* env)
 
     ## DATATYPES
     cdef int FLOAT
@@ -96,3 +96,8 @@ cdef inline getArgument(void* env, char* function, int position):
     else:
         return None
 
+cdef inline int TRUE():
+    return 1
+
+cdef inline int FALSE():
+    return 0

@@ -4,6 +4,7 @@ default_python_modules = {
     "uuid": ["UUID generation module",True],
     "traceback": ["Exploring and printing traceback",True],
     "atexit": ["Execute function at program termination",True],
+    "time": ["Functions for manupulating time", True],
     "posixpath": ["Manipulations with directory structure",True]
 }
 
