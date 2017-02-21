@@ -4,8 +4,21 @@ import uuid
 import shutil
 import time
 import posixpath
+import platform
 
-class MODLDR:
+class PLATFORM:
+    def getARCHITECTURE(self):
+        return platform.architecture()[0]
+    def getDISTNAME(self):
+        return platform.dist()[0]
+    def getDISTVER(self):
+        return platform.dist()[1]
+    def getPLATFORM(self):
+        return platform.machine()
+    def getUNAME(self):
+        return platform.uname()
+
+class MODLDR(PLATFORM):
     def __init__(self, name):
         self.NAME = name
         self.CLIPS6_FACTS_PATH = []
@@ -30,11 +43,11 @@ class MODLDR:
         for m in self.CLIPS6_PACKAGES.keys():
             self.CLIPS6_PACKAGES[m].reload()
     def create(self, path):
-        if check_directory(path) != True:
+        name = get_directory_name(path)
+        if name == None:
             return False
-        name = posixpath.basename(path)
         p = CLIPS6_PACKAGE(name, self)
-        return p.mk_package(path)
+        return p.mk_package(posixpath.abspath(path))
     def set_cache_temp_directory(self):
         if self.TMPDIR != None:
             self.drop_cache_tmp_directory()

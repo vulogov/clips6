@@ -129,6 +129,12 @@ def repeat(fun, log_fun, max_attempts, msg="Attempt: "):
     return False
 
 def read_file_into_buffer(fname):
+    """
+    Reading text file into a list of strings. Empty lines and lines beginning with '#' are ignored
+
+    1. :param fname: Filename
+    2. :return: List of strings
+    """
     buf = []
     _buf = open(fname).readlines()
     for l in _buf:
@@ -137,3 +143,10 @@ def read_file_into_buffer(fname):
             continue
         buf.append(_l)
     return buf
+
+def get_directory_name(path):
+    import posixpath
+    if check_directory(path) != True:
+        return None
+    return posixpath.basename(posixpath.abspath(path))
+

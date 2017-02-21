@@ -6,6 +6,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "-L../clipssrc/lib -L../clipssrc/src -L/usr/local/lib
 #FILE(WRITE clips6_build_defaults.pyx "CLIPS6_DEFAULT_MODULEPATH=${${CLIPS6_MODULE_PATH}}")
 FILE(GLOB ALL_MY_CIRCUIT "*.pyx")
 
+
 EXECUTE_PROCESS( COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 INCLUDE( UseCython )

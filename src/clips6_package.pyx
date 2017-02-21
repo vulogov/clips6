@@ -1,3 +1,6 @@
+import uuid
+
+
 def SIGN(key_file, data):
     import OpenSSL.crypto
     import base64
@@ -38,6 +41,13 @@ class CLIPS6_PACKAGE:
         pkg = {}
         pkg["TIME"] = time.time()
         pkg["NAME"] = self.NAME
+        pkg["ID"]   = str(uuid.uuid4())
+        pkg['ARCH'] = self.loader.getARCHITECTURE()
+        pkg["UNAME"]= self.loader.getUNAME()
+        pkg["PLATFORM"] = self.loader.getPLATFORM()
+        pkg["OS"]   = self.loader.getDISTNAME()
+        pkg["OS_VER"]   = self.loader.getDISTVER()
         print pkg
+        return True
     def reload(self):
         return
