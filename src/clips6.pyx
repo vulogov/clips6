@@ -2,6 +2,7 @@
 ## This is main file for the clips6.so Python module
 ##
 
+include "clips6_version.pyx"
 include "clips_definitions.pyx"
 include "clips6_imp.pyx"
 ##
@@ -11,6 +12,7 @@ check_python_modules(default_python_modules, False)
 include "userfun.pyx"
 include "clips6_lib.pyx"
 include "clp2py.pyx"
+include "clips6_package.pyx"
 include "clips6_modldr.pyx"
 include "clips6_env.pyx"
 include "clips6_shell.pyx"

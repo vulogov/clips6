@@ -186,3 +186,9 @@ src/clips6_pkg_static.h
 src/clips6_pkg_static.c
 
 src/clips6pkg
+
+modules/dummy_package/CMakeFiles/*
+
+modules/dummy_package/dummy_package.c
+
+modules/dummy_package/dummy_package.h

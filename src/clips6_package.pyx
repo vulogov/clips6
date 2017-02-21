@@ -3,7 +3,7 @@ def SIGN(key_file, data):
     import base64
 
     if check_file_read(key_file) != True:
-        raise PackageError, "Can not access private key %s"%key_file
+        raise ShellError, "Can not access private key %s"%key_file
 
     try:
         st_key = open(key_file, 'rt').read()
@@ -11,7 +11,7 @@ def SIGN(key_file, data):
         sign = OpenSSL.crypto.sign(key, data, "sha256")
         return base64.b64encode(sign)
     except:
-        raise PackageError, "Can not sign with %s"%key_file
+        raise ShellError, "Can not sign with %s"%key_file
 
 def VERIFY(cert_file, data, sign):
     import OpenSSL.crypto
@@ -19,7 +19,7 @@ def VERIFY(cert_file, data, sign):
 
     sig = base64.b64decode(sign)
     if check_file_read(cert_file) != True:
-        raise PackageError, "Can not access certificate %s"%cert_file
+        raise ShellError, "Can not access certificate %s"%cert_file
 
     try:
         st_cert = open(cert_file, 'rt').read()
@@ -37,3 +37,7 @@ class CLIPS6_PACKAGE:
     def mk_package(self, path):
         pkg = {}
         pkg["TIME"] = time.time()
+        pkg["NAME"] = self.NAME
+        print pkg
+    def reload(self):
+        return

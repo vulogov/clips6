@@ -71,6 +71,7 @@ cdef extern from "clips.h":
     void* CreateEnvironment()
     int   DeallocateEnvironmentData()
     int   DestroyEnvironment(void* theEnv)
+    void  InitializeUtilityData(void *theEnv)
     void  EnvClear(void* env)
     void  EnvReset(void* env)
     int   EnvLoad(void* env, char* name)

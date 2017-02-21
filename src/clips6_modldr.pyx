@@ -3,6 +3,7 @@ import tempfile
 import uuid
 import shutil
 import time
+import posixpath
 
 class MODLDR:
     def __init__(self, name):
@@ -26,6 +27,14 @@ class MODLDR:
         self._set_from_env("CLIPS6_RULES_PATH")
         self._set_from_env("CLIPS6_PYTHON_PATH")
         self._set_from_env("CLIPS6_MODULES_PATH")
+        for m in self.CLIPS6_PACKAGES.keys():
+            self.CLIPS6_PACKAGES[m].reload()
+    def create(self, path):
+        if check_directory(path) != True:
+            return False
+        name = posixpath.basename(path)
+        p = CLIPS6_PACKAGE(name, self)
+        return p.mk_package(path)
     def set_cache_temp_directory(self):
         if self.TMPDIR != None:
             self.drop_cache_tmp_directory()

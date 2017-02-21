@@ -8,14 +8,6 @@ class ENVCTL:
         self._lock = 0
         self.max_lock = 3600
         self.envs = {}
-        self.env_default_name = None
-        try:
-            if os.environ.has_key("CLIPS6_DEFAULT_ENVIRONMENT") == True and len(os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()) > 0:
-                self.env_default_name = os.environ["CLIPS6_DEFAULT_ENVIRONMENT"].strip()
-        except:
-            pass
-        if self.env_default_name != None:
-            ENV(self.env_default_name, set_current=True, E=self)
     def wait_for_lock(self, w=180):
         s = time.time()
         while True:
@@ -60,6 +52,7 @@ class ENVCTL:
 
 E = ENVCTL()
 
+
 cdef class BASEENV:
     cdef void * env
     cdef object ready
@@ -80,7 +73,7 @@ cdef class ENV(BASEENV):
     cdef object ctl
     cdef char*  name
     cdef object set_current
-    cdef object loader
+    cdef public object loader
     def __cinit__(self, name=str(uuid.uuid4()), **kw):
         global E
         BASEENV.Cinit(self)
@@ -212,7 +205,7 @@ cdef class ENV(BASEENV):
             DestroyEnvironment(<void*>self.env)
         self.loader.stop()
 
-def MAKE(name):
+def MAKE(name=str(uuid.uuid4())):
     global E
     if E.is_registered(name) == True:
         e = E[name]
@@ -227,3 +220,4 @@ def ADD(name):
 def CURRENT():
     global E
     return E.current()
+
