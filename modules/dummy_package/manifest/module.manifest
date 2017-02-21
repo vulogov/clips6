@@ -1,0 +1,4 @@
+(package
+    (maintainer "Vladimir Ulogov")
+    (origin "ACME Corp")
+)
