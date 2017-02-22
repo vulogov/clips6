@@ -6,5 +6,6 @@ class FactError(RuntimeError):
     pass
 class EnvError(RuntimeError):
     pass
-class PackageError(RuntimeError):
+
+class PkgError(RuntimeError):
     pass

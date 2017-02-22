@@ -5,6 +5,7 @@
 include "clips6.pyx"
 import argparse
 import sys
+import posixpath
 
 
 _DESC="""clips6 packaging tool VER(%s)"""%CLIPS6_VERSION
@@ -38,9 +39,13 @@ class PkgConfig:
         self.parser.add_argument("--signature", "-s", action="store_true", help="Display package signature")
         self.parser.add_argument('path', metavar='N', type=str, nargs='*',
                                  help='Path to the clips6 module')
+        self.parser.add_argument("--out", "-o", type=str, default=".", help="Destination directory")
         self.ready -= 1
     def process(self):
-        return
+        self.args.out = posixpath.abspath(self.args.out)
+        if check_directory_write(self.args.out) == False:
+            print "Can not output to the directory: %s"%self.args.out
+            self.ready += 1
 
 
 class Packager(PyConfig, ClipsConfig, PkgConfig):
@@ -73,7 +78,13 @@ class Packager(PyConfig, ClipsConfig, PkgConfig):
             self.create()
     def create(self):
         for d in self.args.path:
-            if self.env.loader.create(d) != True:
+            try:
+                pack, pkg = self.env.loader.create(d, self.args.private)
+                pkg_fname = "%s/%s-%s-%s.package"%(self.args.out, pkg["NAME"],pkg["OS"],pkg["PLATFORM"])
+                f = open(pkg_fname, "wb")
+                f.write(pack)
+                f.close()
+            except:
                 print "Can not generate package for the %s"%d
                 break
 

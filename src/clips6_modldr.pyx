@@ -5,6 +5,7 @@ import shutil
 import time
 import posixpath
 import platform
+import msgpack
 
 class PLATFORM:
     def getARCHITECTURE(self):
@@ -42,12 +43,19 @@ class MODLDR(PLATFORM):
         self._set_from_env("CLIPS6_MODULES_PATH")
         for m in self.CLIPS6_PACKAGES.keys():
             self.CLIPS6_PACKAGES[m].reload()
-    def create(self, path):
+    def create(self, path, key_file):
         name = get_directory_name(path)
         if name == None:
-            return False
+            raise PkgError, "Can not get a package name in %s"%path
         p = CLIPS6_PACKAGE(name, self)
-        return p.mk_package(posixpath.abspath(path))
+        res =  p.mk_package(posixpath.abspath(path))
+        if res == False:
+            raise PkgError, "Can not generate a package in %s"%path
+        env = PACKET()
+        sign, data = SIGN(key_file, p.package.data)
+        env["SIGNATURE"] = sign
+        env["DATA"] = data
+        return (msgpack.dumps(env.data), p.package)
     def set_cache_temp_directory(self):
         if self.TMPDIR != None:
             self.drop_cache_tmp_directory()

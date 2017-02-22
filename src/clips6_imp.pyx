@@ -10,6 +10,9 @@ default_python_modules = {
     "tempfile": ["Temporary files geneartion", True],
     "shutil": ["High-level shell utilities", True],
     "base64": ["BASE64 encoding/decoding", True],
+    "zlib": ["Compression routines", True],
+    "UserDict": ["USER dictionary class", True],
+    "fnmatch": ["Filename matching patterns", True],
     "posixpath": ["Manipulations with directory structure",True]
 }
 

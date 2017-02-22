@@ -2,6 +2,8 @@
 ##
 ##
 import os
+import posixpath
+import fnmatch
 
 def rchop(thestring, ending):
     """Chopping a string ending:
@@ -97,6 +99,7 @@ def get_dir_content(dname):
     1. :param dname: Directory name
     2. :return: List
     """
+    dname = posixpath.abspath(dname)
     if not check_directory(dname):
         return []
     ret = []
@@ -104,6 +107,23 @@ def get_dir_content(dname):
         if not check_file_read("%s/%s"%(dname, f)):
             continue
         ret.append((f, "%s/%s"%(dname, f), os.path.splitext(f)))
+    return ret
+
+def read_dir_content(dname, patt="*"):
+    """
+    Return content of the directory as a list of the string containing the file's content
+
+    1. :param dname: Directory name
+    2. :param patt: Pattern matching
+    3. :return:
+    """
+    ret = {}
+    for _f, _fn, _fi in get_dir_content(dname):
+        if fnmatch.fnmatch(_f, patt) != True:
+            continue
+        if check_file_read(_fn) != True:
+            continue
+        ret[_f] = open(_fn).read()
     return ret
 
 def repeat(fun, log_fun, max_attempts, msg="Attempt: "):
