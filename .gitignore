@@ -192,3 +192,5 @@ modules/dummy_package/CMakeFiles/*
 modules/dummy_package/dummy_package.c
 
 modules/dummy_package/dummy_package.h
+
+*.package

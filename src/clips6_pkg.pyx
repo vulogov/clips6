@@ -53,6 +53,9 @@ class Packager(PyConfig, ClipsConfig, PkgConfig):
         self.env = CURRENT()
         if self.env == None:
             self.env = MAKE()
+        if self.env.isReady() == False:
+            print "Environment isn't ready. Exit."
+            sys.exit(98)
         print self.env.loader
         self.init()
         self.parse_args()
@@ -87,6 +90,9 @@ class Packager(PyConfig, ClipsConfig, PkgConfig):
             except:
                 print "Can not generate package for the %s"%d
                 break
+    def private_install(self):
+        return
+
 
 
 def main():

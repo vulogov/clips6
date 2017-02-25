@@ -6,6 +6,7 @@ import time
 import posixpath
 import platform
 import msgpack
+import anydbm
 
 class PLATFORM:
     def getARCHITECTURE(self):
@@ -30,9 +31,12 @@ class MODLDR(PLATFORM):
         self.CLIPS6_PACKAGES = {}
         self.HOME = "/tmp"
         self.USER = "nobody"
+        self.PVTDIR = "%s/.clips6"%self.HOME
+        self.KEYRING = "%s/keyring"%self.PVTDIR
         self.CLIPS6_ENABLE_CACHE = False
         self.HOME = None
         self.TMPDIR = None
+        self.KRDB = None
         self.reload()
     def reload(self):
         self.check_cache_enable()
@@ -43,6 +47,30 @@ class MODLDR(PLATFORM):
         self._set_from_env("CLIPS6_MODULES_PATH")
         for m in self.CLIPS6_PACKAGES.keys():
             self.CLIPS6_PACKAGES[m].reload()
+        return True
+    def init_user_environment(self, _kw, **kw):
+        if len(kw.keys()) > 0:
+            _k = kw
+        else:
+            _k = _kw
+        self.USER = get_from_env("USER", default="nobody", kw=_k)
+        self.HOME = get_from_env("CLIPS6_HOME", "HOME", default="/tmp", kw=_k)
+        self.PVTDIR = get_from_env("CLIPS6_PRIVATE_DIR", default="%s/.clips6"%self.HOME, kw=_k)
+        self.KEYRING = get_from_env("CLIPS6_KEYRING", default="%s/keyring"%self.PVTDIR, kw=_k)
+        if check_directory_write(self.PVTDIR) == False:
+            try:
+                os.makedirs(self.PVTDIR)
+            except KeyboardInterrupt:
+                return False
+        try:
+            self.KRDB = KEYRING(self)
+        except KeyboardInterrupt:
+            return False
+        if check_file_write(self.KEYRING) == False:
+            return False
+        os.chmod(self.PVTDIR, 0700)
+        os.chmod(self.KEYRING, 0600)
+        return True
     def create(self, path, key_file):
         name = get_directory_name(path)
         if name == None:

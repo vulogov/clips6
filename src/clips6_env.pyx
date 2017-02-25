@@ -2,6 +2,7 @@ import uuid
 import time
 import os
 
+
 class ENVCTL:
     def __init__(self):
         self.default = None
@@ -81,6 +82,7 @@ cdef class ENV(BASEENV):
         self.facts = []
         self.name = name
         self.set_current = True
+        self.ready = False
         if kw.has_key("set_current"):
             self.set_current = kw["set_current"]
         if kw.has_key("E"):
@@ -92,9 +94,30 @@ cdef class ENV(BASEENV):
             self.ctl.register(self)
             if self.set_current == True and self.IS_REGISTERED():
                 self.CURRENT()
+            self.CLEAR()
             self.loader = MODLDR(self.name)
+            _k = {}
+            if kw.has_key("LDR"):
+                _k = kw["LDR"]
+            self.ready = self.loader.init_user_environment(_k)
+            if self.loader.reload() != True:
+                self.ready = False
+            else:
+                self.RESET()
+                self.ready = True
         else:
             self.loader = None
+            self.ready = False
+    def RELOAD(self, _kw, **kw):
+        _k = _kw
+        if len(kw.keys()) > 0:
+            _k = kw
+        if self.ready != True:
+            raise EnvError, "Environment is not ready for  RELOAD()"
+        self.CLEAR()
+        self.loader.init_user_environment(_k)
+        self.loader.reload()
+        self.RESET()
     def IS_REGISTERED(self):
         if self.ready != True:
             raise EnvError, "Environment is not ready for the IS_REGISTERED()"

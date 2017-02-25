@@ -13,6 +13,7 @@ default_python_modules = {
     "zlib": ["Compression routines", True],
     "UserDict": ["USER dictionary class", True],
     "fnmatch": ["Filename matching patterns", True],
+    "anydbm": ["Simple key-value storage", True],
     "posixpath": ["Manipulations with directory structure",True]
 }
 

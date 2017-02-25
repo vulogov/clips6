@@ -165,8 +165,66 @@ def read_file_into_buffer(fname):
     return buf
 
 def get_directory_name(path):
+    """
+    Get the basename of the directory
+
+    1. :param path: Directory path
+    2. :return: basename
+    """
     import posixpath
     if check_directory(path) != True:
         return None
     return posixpath.basename(posixpath.abspath(path))
 
+def get_from_env(*var_names, **kw):
+    _default = None
+    if kw.has_key("default"):
+        _default = kw["default"]
+    for e in var_names:
+        if kw.has_key("kw") and kw["kw"].has_key(e):
+            return kw["kw"][e]
+        elif os.environ.has_key(e):
+            return os.environ[e]
+        else:
+            pass
+    return _default
+
+def compress(data, clibs=[]):
+    if len(clibs) == 0:
+        return (False, None, data)
+    for c in clibs:
+        try:
+            if c == "zlib":
+                import zlib
+                return (True, "zlib", zlib.compress(data))
+            elif c == "lz4":
+                import lz4
+                return (True, "zlib", lz4.compress(data))
+            elif c == "snappy":
+                import pysnappy
+                return (True, "snappy", pysnappy.compress(data))
+            else:
+                import zlib
+                return (True, "zlib", zlib.compress(data))
+        except:
+            return (False, None, data)
+    return (False, None, data)
+
+def decompress(data, c=None):
+    if c == None:
+        return (False, None, data)
+    try:
+        if c == "zlib":
+            import zlib
+            return (True, "zlib", zlib.decompress(data))
+        elif c == "lz4":
+            import lz4
+            return (True, "zlib", lz4.decompress(data))
+        elif c == "snappy":
+            import pysnappy
+            return (True, "snappy", pysnappy.uncompress(data))
+        else:
+            import zlib
+            return (True, "zlib", zlib.decompress(data))
+    except:
+        return (False, None, data)
