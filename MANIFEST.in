@@ -10,3 +10,5 @@ include src/clips6_f.c
 recursive-include src *.pyi
 recursive-include include *
 recursive-include cmake *
+recursive-include clipssrc/src *
+include clipssrc/CMakeLists.txt
