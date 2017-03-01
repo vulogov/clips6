@@ -48,16 +48,6 @@ def UNPACK(cert_file, data, sign):
     raise PkgError, "Can not unpack data"
 
 
-class PACKET(UserDict.UserDict):
-    def __init__(self):
-        UserDict.UserDict.__init__(self)
-        self['ID'] = str(uuid.uuid4())
-        self["TIME"] = time.time()
-    def dumps(self, key_file):
-        return SIGN(key_file, self.data)
-    def loads(self, key_file, data, sign):
-        self.data = UNPACK(key_file, data)
-
 
 class CLIPS6_PACKAGE:
     def __init__(self, name, loader):

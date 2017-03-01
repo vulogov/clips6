@@ -75,6 +75,7 @@ cdef class ENV(BASEENV):
     cdef char*  name
     cdef object set_current
     cdef public object loader
+    cdef public object keyring
     def __cinit__(self, name=str(uuid.uuid4()), **kw):
         global E
         BASEENV.Cinit(self)
@@ -83,6 +84,7 @@ cdef class ENV(BASEENV):
         self.name = name
         self.set_current = True
         self.ready = False
+        self.keyring = None
         if kw.has_key("set_current"):
             self.set_current = kw["set_current"]
         if kw.has_key("E"):
@@ -104,6 +106,7 @@ cdef class ENV(BASEENV):
                 self.ready = False
             else:
                 self.RESET()
+                self.keyring = self.loader.KRDB
                 self.ready = True
         else:
             self.loader = None
