@@ -40,7 +40,7 @@ class build(_build.build):
 
 class install(_install.install):
     def run(self):
-        if not posixpath.exists("src/clips6.so"/)
+        if not posixpath.exists("src/clips6.so"):
             run_cmake()
         ds.spawn(['make', 'install'])
         #self.distribution.ext_modules = get_ext_modules()
@@ -54,7 +54,7 @@ setup(
     version = '0.1',
     description = 'CLIPS Expert System wrapper for the Python',
     requires = ["msgpack", "PyOpenSSL"],
-    install_requires = ["msgpack", "PyOpenSSL"],
+    install_requires = ["PyOpenSSL"],
     include_package_data = True,
     url = 'https://github.com/vulogov/clips6/',
     author='Vladimir Ulogov',
@@ -65,25 +65,27 @@ setup(
     keywords = "clips, expert system",
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
     classifiers = [
-         'Development Status :: 4 - Beta',
+         'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
-         'Intended Audience :: Science/Research',
-         'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',
+         'Intended Audience :: Software Development',
+         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
          'Operating System :: OS Independent',
          'Programming Language :: Python :: 2',
          'Programming Language :: Python :: 2.4',
          'Programming Language :: Python :: 2.5',
          'Programming Language :: Python :: 2.6',
          'Programming Language :: Python :: 2.7',
-         'Topic :: Scientific/Engineering',
-         'Topic :: Scientific/Engineering :: Artificial Life',
-         'Topic :: Sociology',
+         'Topic :: Software Development',
+         'Topic :: Software Development :: Libraries',
          'Topic :: Software Development :: Libraries :: Python Modules',
-         'Topic :: Software Development :: Libraries :: Application Frameworks',
-         'Topic :: System :: Distributed Computing'],
+         'Topic :: Software Development :: Libraries :: Python Modules',
+         'Topic :: Scientific/Engineering :: Artificial Intelligence'],
     # ext_modules is not present here. This will be generated through CMake via the
     # build or install commands
     cmdclass={'install':install,'build': build},
     zip_safe=False,
-    packages = [],
+    packages = ['clips6'],
+    package_data = {
+        'clips6': ['clips6.so']
+    }
 )

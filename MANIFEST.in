@@ -1,0 +1,12 @@
+include LICENSE
+include CMakeLists.txt
+recursive-include modules *
+recursive-include src/clips *
+recursive-include src *.pyx
+recursive-include src CMakeLists.txt
+include src/clips6_dl.c
+include src/clips6_io.c
+include src/clips6_f.c
+recursive-include src *.pyi
+recursive-include include *
+recursive-include cmake *
