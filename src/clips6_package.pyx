@@ -54,8 +54,11 @@ class CLIPS6_PACKAGE:
         self.NAME = name
         self.loader = loader
         self.package = None
+        self.compress_algo
+    def envelope_dumps(self, pkg):
+        return compress(msgpack.dumps(data), ["zlib"])
     def mk_package(self, path):
-        pkg = PACKET()
+        pkg = PACKET(self)
         pkg["NAME"] = self.NAME
         pkg['ARCH'] = self.loader.getARCHITECTURE()
         pkg["UNAME"]= self.loader.getUNAME()

@@ -57,6 +57,7 @@ class MODLDR(PLATFORM):
         self.HOME = get_from_env("CLIPS6_HOME", "HOME", default="/tmp", kw=_k)
         self.PVTDIR = get_from_env("CLIPS6_PRIVATE_DIR", default="%s/.clips6"%self.HOME, kw=_k)
         self.KEYRING = get_from_env("CLIPS6_KEYRING", default="%s/keyring"%self.PVTDIR, kw=_k)
+        self.KEYNAME = get_from_env("CLIPS6_KEYNAME", default="default", kw=_k)
         if check_directory_write(self.PVTDIR) == False:
             try:
                 os.makedirs(self.PVTDIR)

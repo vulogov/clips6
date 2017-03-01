@@ -9,15 +9,17 @@ class PACKET(UserDict.UserDict):
         self.ctx = ctx
         self['ID'] = str(uuid.uuid4())
         self["TIME"] = time.time()
-    def envelope_close(self, **kw):
+    def envelope(self, **kw):
         e = PACKET()
         if self.ctx != None:
             e["COMPRESS"] = self.ctx.compress_algo
             e["DATA"] = self.ctx.envelope_dumps(self)
+            e["SIGNATURE"] = self.ctx.loader.KRDB.sign(self.ctx.loader.KEYNAME, e["DATA"])
+            e["KEYNAME"] = self.ctx.loader.KEYNAMEs
         else:
             e["COMPRESS"] = "zlib"
             e["DATA"] = self.envelope_dumps(self.data)
-        return self.envelope_dumps(e.data)
+        return e
     def envelope_dumps(self, data):
         return compress(msgpack.dumps(data),["zlib"])
     def envelope_loads(self, data, c="zlib"):
