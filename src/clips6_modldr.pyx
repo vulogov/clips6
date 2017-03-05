@@ -21,7 +21,7 @@ class PLATFORM:
         return platform.uname()
 
 class MODLDR(PLATFORM):
-    def __init__(self, name):
+    def __init__(self, name, env):
         self.NAME = name
         self.CLIPS6_FACTS_PATH = []
         self.CLIPS6_RULES_PATH = []
@@ -37,6 +37,7 @@ class MODLDR(PLATFORM):
         self.HOME = None
         self.TMPDIR = None
         self.KRDB = None
+        self.env = env
         self.reload()
     def reload(self):
         self.check_cache_enable()
@@ -78,13 +79,15 @@ class MODLDR(PLATFORM):
             raise PkgError, "Can not get a package name in %s"%path
         p = CLIPS6_PACKAGE(name, self)
         res =  p.mk_package(posixpath.abspath(path))
+        print 3,res
         if res == False:
             raise PkgError, "Can not generate a package in %s"%path
-        env = PACKET()
-        sign, data = SIGN(key_file, p.package.data)
-        env["SIGNATURE"] = sign
-        env["DATA"] = data
-        return (msgpack.dumps(env.data), p.package)
+        print res
+        #env = PACKET(self)
+        #sign, data = SIGN(key_file, p.package.data)
+        #env["SIGNATURE"] = sign
+        #env["DATA"] = data
+        return ""
     def set_cache_temp_directory(self):
         if self.TMPDIR != None:
             self.drop_cache_tmp_directory()

@@ -74,8 +74,7 @@ cdef class ENV(BASEENV):
     cdef object ctl
     cdef char*  name
     cdef object set_current
-    cdef public object loader
-    cdef public object keyring
+
     def __cinit__(self, name=str(uuid.uuid4()), **kw):
         global E
         BASEENV.Cinit(self)
@@ -84,7 +83,7 @@ cdef class ENV(BASEENV):
         self.name = name
         self.set_current = True
         self.ready = False
-        self.keyring = None
+
         if kw.has_key("set_current"):
             self.set_current = kw["set_current"]
         if kw.has_key("E"):
@@ -96,20 +95,9 @@ cdef class ENV(BASEENV):
             self.ctl.register(self)
             if self.set_current == True and self.IS_REGISTERED():
                 self.CURRENT()
-            self.CLEAR()
-            self.loader = MODLDR(self.name)
-            _k = {}
-            if kw.has_key("LDR"):
-                _k = kw["LDR"]
-            self.ready = self.loader.init_user_environment(_k)
-            if self.loader.reload() != True:
-                self.ready = False
-            else:
-                self.RESET()
-                self.keyring = self.loader.KRDB
                 self.ready = True
+            self.CLEAR()
         else:
-            self.loader = None
             self.ready = False
     def RELOAD(self, _kw, **kw):
         _k = _kw
@@ -118,8 +106,6 @@ cdef class ENV(BASEENV):
         if self.ready != True:
             raise EnvError, "Environment is not ready for  RELOAD()"
         self.CLEAR()
-        self.loader.init_user_environment(_k)
-        self.loader.reload()
         self.RESET()
     def IS_REGISTERED(self):
         if self.ready != True:
@@ -229,7 +215,7 @@ cdef class ENV(BASEENV):
             f.stop()
         if self.ready == True:
             DestroyEnvironment(<void*>self.env)
-        self.loader.stop()
+
 
 def MAKE(name=str(uuid.uuid4())):
     global E

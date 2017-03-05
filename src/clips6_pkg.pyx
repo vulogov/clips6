@@ -110,7 +110,7 @@ class Packager(PyConfig, ClipsConfig, PkgConfig):
                 f = open(pkg_fname, "wb")
                 f.write(pack)
                 f.close()
-            except:
+            except KeyboardInterrupt:
                 print "Can not generate package for the %s"%d
                 break
     def private_install(self):

@@ -54,9 +54,9 @@ class CLIPS6_PACKAGE:
         self.NAME = name
         self.loader = loader
         self.package = None
-        self.compress_algo
+        self.compress_algo = "zlib"
     def envelope_dumps(self, pkg):
-        return compress(msgpack.dumps(data), ["zlib"])
+        return compress(msgpack.dumps(pkg), ["zlib"])
     def mk_package(self, path):
         pkg = PACKET(self)
         pkg["NAME"] = self.NAME
@@ -67,9 +67,11 @@ class CLIPS6_PACKAGE:
         pkg["OS_VER"]   = self.loader.getDISTVER()
         _mod = posixpath.abspath("%s/%s.module"%(path, self.NAME))
         if check_file_read(_mod) == False:
+            print 1
             return False
         pkg["MODULE"] = read_file_into_buffer(_mod)
         if check_directory("%s/manifest"%path) == False:
+            print 2
             return False
         _man = posixpath.abspath("%s/manifest"%path)
         pkg["MANIFEST"] = read_dir_content(_man)
